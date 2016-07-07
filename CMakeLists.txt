@@ -3,6 +3,6 @@ project (MyChromium)
 
 add_subdirectory (googletest)
 
-add_executable (MyChromium main.cpp)
-target_link_libraries (MyChromium googletest)
+add_subdirectory (base)
+
 
