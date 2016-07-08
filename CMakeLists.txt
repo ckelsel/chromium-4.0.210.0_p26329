@@ -4,6 +4,7 @@ project(${PROJECT_NAME_STR} C CXX)
 
 find_package(Threads REQUIRED)
 
+
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-Wall -ansi -Wno-deprecated -pthread)
 endif()
@@ -11,7 +12,12 @@ endif()
 if(MSVC)
     #vc 2012 fix for vararg templates
     set(MSVC_COMPILER_DEFS "-D_VARIADIC_MAX=10")
+    set (COMMON_CXX_FLAGS "-W4 -WX")
+else()
+    set (COMMON_CXX_FLAGS "-Wall -Werror")
 endif() 
+set (CMAKE_CXX_FLAGS ${COMMON_CXX_FLAGS})
+
 #-------------------
 # set common include folder for module
 #-------------------
