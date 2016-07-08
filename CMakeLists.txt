@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.7)
-set(PROJECT_NAME_STR google-test-examples)
+set(PROJECT_NAME_STR chromium)
 project(${PROJECT_NAME_STR} C CXX)
 
 find_package(Threads REQUIRED)
@@ -15,17 +15,17 @@ endif()
 #-------------------
 # set common include folder for module
 #-------------------
-set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
+set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/base)
 set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
 
 #-------------------
 # Module source
 #-------------------
-#set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_impl)
+set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_base_impl)
 
-#include_directories(${COMMON_INCLUDES})
-#file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-#add_library(${PROJECT_LIB_NAME} ${SRC_FILES})
+include_directories(${COMMON_INCLUDES})
+file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/base/*.cc)
+add_library(${PROJECT_LIB_NAME} ${SRC_FILES})
 
 add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
 
@@ -34,7 +34,7 @@ add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
 #-------------------
 add_definitions(${MSVC_COMPILER_DEFS})
 enable_testing()
-set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
+set(PROJECT_TEST_NAME ${PROJECT_LIB_NAME}_test)
 include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
 
 file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
