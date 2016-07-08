@@ -30,3 +30,21 @@ TEST(basictypes_unittest, size)
     EXPECT_EQ(sizeof(uint32), 4);
     EXPECT_EQ(sizeof(uint64), 8);
 }
+
+TEST(basictypes_unittest, compare)
+{
+    EXPECT_TRUE(kint8min < kint8max);
+    EXPECT_TRUE(kint16min < kint16max);
+    EXPECT_TRUE(kint32min < kint32max);
+    EXPECT_TRUE(kint64min < kint64max);
+
+    EXPECT_TRUE(kint8max < kuint8max);
+    EXPECT_TRUE(kint16max < kuint16max);
+    EXPECT_TRUE(kint32max < kuint32max);
+    EXPECT_TRUE(kint64max < kuint64max);
+
+    EXPECT_TRUE(kint8min < kuint8max);
+    EXPECT_TRUE(kint16min < kuint16max);
+    EXPECT_TRUE(kint32min < kuint32max);
+    EXPECT_TRUE(kint64min < kuint64max);
+}
