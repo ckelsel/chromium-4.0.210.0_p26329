@@ -30,3 +30,6 @@ build_
 *.exe
 *.out
 *.app
+
+# Vim
+*.swp

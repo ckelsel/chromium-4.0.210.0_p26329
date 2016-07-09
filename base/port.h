@@ -15,6 +15,8 @@
 #ifndef BASE_PORT_H_
 #define BASE_PORT_H_
 
+#include "build/build_config.h"
+
 #ifdef COMPILER_MSVC
 #define GG_LONGLONG(x)  x##I64
 #define GG_ULONGLONG(x) x##UI64
