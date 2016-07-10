@@ -17,6 +17,11 @@
 
 #include "base/port.h"
 
+#if defined(COMPILER_MSVC)
+#pragma warning (push)
+#pragma warning (disable:4310)
+#endif
+
 //
 // signed
 //
@@ -59,5 +64,9 @@ const  int32 kint32max  = (( int32) 0x7FFFFFFF);
 const  int32 kint32min  = (( int32) 0x80000000);
 const  int64 kint64max  = (( int64) GG_INT64_C(0x7FFFFFFFFFFFFFFF));
 const  int64 kint64min  = (( int64) GG_INT64_C(0x8000000000000000));
+
+#if defined(COMPILER_MSVC)
+#pragma warning (pop)
+#endif
 
 #endif // _BASE_BASICTYPES_H_

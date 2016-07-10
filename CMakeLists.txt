@@ -12,7 +12,7 @@ endif()
 if(MSVC)
     #vc 2012 fix for vararg templates
     set(MSVC_COMPILER_DEFS "-D_VARIADIC_MAX=10")
-    set (COMMON_CXX_FLAGS "-W4 -WX")
+    set (COMMON_CXX_FLAGS "/W4 /WX /EHsc")
 else()
     set (COMMON_CXX_FLAGS "-Wall -Werror")
 endif() 
