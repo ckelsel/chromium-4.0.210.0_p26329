@@ -12,46 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "gtest/gtest.h"
 #include "base/string16.h"
 
-#if defined(WCHAR_T_IS_UTF16)
-
-#error This file should not be used on 2-byte wchar_t systems
-
-#elif defined(WCHAR_TIS_UTF32)
-
-namespace base {
-
-int c16memcmp(const char16 *s1, const char16 *s2, size_t n)
+TEST(char16, test)
 {
-    return 0;
 }
-
-size_t c16len(const char16 *s)
-{
-    return 0;
-}
-
-const char16 *c16memchr(const char16 *s, char16 c, size_t n)
-{
-    return NULL;
-}
-
-char16 *c16memmove(char16 *dest, const char16 *src, size_t n)
-{
-    return NULL;
-}
-
-char16 *c16memcpy(char16 *dest, const char16 *src, size_t n)
-{
-    return NULL;
-}
-
-char16 *c16memset(char16 *s, char16 c, size_t n)
-{
-    return NULL;
-}
-
-};
-
-#endif
