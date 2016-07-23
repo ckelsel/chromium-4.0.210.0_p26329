@@ -15,6 +15,17 @@
 #include "gtest/gtest.h"
 #include "base/string16.h"
 
-TEST(char16, test)
+
+TEST(char16, c16memcmp)
 {
+#if 0
+    // FIXME build error
+    base::char16 c1;
+    char16 *c1 = L"abcd";
+    char16 *c2 = L"abcd";
+
+    char16 a1[] = L"AAAA";
+
+    EXPECT_EQ(0, c16memcmp(c1, c2, sizeof(c1)));
+#endif
 }

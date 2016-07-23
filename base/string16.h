@@ -47,6 +47,7 @@ typedef wchar_t char16;
 typedef std::wstring string16;
 
 #elif defined(WCHAR_TIS_UTF32)
+#error WCHAR_TIS_UTF32
 
 typedef uint16 char16;
 

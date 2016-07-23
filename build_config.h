@@ -14,6 +14,9 @@
 #ifndef BUILD_BUILD_CONFIG_H_
 #define BUILD_BUILD_CONFIG_H_
 
+// Use Chromium base for setup unittset
+#define USE_CHROMIUM_BASE 1
+
 // A set of macros to use for platform detection.
 #if defined(__APPLE__)
 #define OS_MACOSX 1
