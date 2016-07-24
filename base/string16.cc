@@ -18,7 +18,11 @@
 
 #error This file should not be used on 2-byte wchar_t systems
 
-#elif defined(WCHAR_TIS_UTF32)
+#elif defined(WCHAR_T_IS_UTF32)
+
+#include "base/string_util.h"
+
+#include <string.h>
 
 #if defined(USE_CHROMIUM_BASE)
 
@@ -116,8 +120,8 @@ char16 *c16memset(char16 *s, char16 c, size_t n)
 {
     return NULL;
 }
-#endif // USE_CHROMIUM_BASE
 
-};
+}  // namespace base
+#endif // USE_CHROMIUM_BASE
 
 #endif

@@ -12,21 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "gtest/gtest.h"
-#include "base/string16.h"
+#include "base/string_util.h"
 
+#include "build/build_config.h"
 
-TEST(char16, c16memcmp)
-{
-    char16 c1 = 1;
-    (void)c1;
-#if 0
-    char16 *c1 = L"abcd";
-    char16 *c2 = L"abcd";
+#include <ctype.h>
+#include <errno.h>
+#include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <wchar.h>
+#include <wctype.h>
 
-    char16 a1[] = L"AAAA";
-
-    EXPECT_EQ(0, c16memcmp(c1, c2, sizeof(c1)));
-    EXPECT_EQ(1, c16memcmp(c1, a1, sizeof(c1)));
-#endif
-}
+#include <algorithm>
+#include <vector>
