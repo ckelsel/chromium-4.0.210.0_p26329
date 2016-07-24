@@ -16,17 +16,6 @@
 #include "base/string16.h"
 
 
-TEST(char16, c16memcmp)
+TEST(char16, empty)
 {
-    char16 c1 = 1;
-    (void)c1;
-#if 0
-    char16 *c1 = L"abcd";
-    char16 *c2 = L"abcd";
-
-    char16 a1[] = L"AAAA";
-
-    EXPECT_EQ(0, c16memcmp(c1, c2, sizeof(c1)));
-    EXPECT_EQ(1, c16memcmp(c1, a1, sizeof(c1)));
-#endif
 }
