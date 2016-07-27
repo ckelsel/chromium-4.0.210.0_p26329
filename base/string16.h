@@ -50,13 +50,16 @@ typedef std::wstring string16;
 
 typedef uint16 char16;
 
-namespace base {
+namespace base 
+{
+
 int c16memcmp(const char16 *s1, const char16 *s2, size_t n);
 size_t c16len(const char16 *s);
 const char16 *c16memchr(const char16 *s, char16 c, size_t n);
 char16 *c16memmove(char16 *dest, const char16 *src, size_t n);
 char16 *c16memcpy(char16 *dest, const char16 *src, size_t n);
 char16 *c16memset(char16 *s, char16 c, size_t n);
+
 };
 
 #endif // WCHAR_TIS_UTF32
