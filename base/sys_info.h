@@ -27,7 +27,7 @@ class SysInfo
 public:
 
     // Return the number of logical processors/cores on the current machine.
-    static int NumberOfProcessors();
+    static int32 NumberOfProcessors();
 
     // Return the number of bytes of physical memory on the current machine.
     static int64 AmountOfPhysicalMemory();
@@ -35,7 +35,7 @@ public:
     // Return the number of megabytes of physical memory on the current machine.
     static int64 AmountOfPhysicalMemoryMB() 
     {
-        return static_cast<int>(AmountOfPhysicalMemory() / 1024 / 1024);
+        return static_cast<int32>(AmountOfPhysicalMemory() / 1024 / 1024);
     }
 
     // Return the available disk space in bytes on the volume containing |
@@ -66,10 +66,10 @@ public:
 
     // Return the pixel dimensions of the primary display via the
     // width and height parameters.
-    static void GetPrimaryDisplayDimensions(int *width, int *height);
+    static void GetPrimaryDisplayDimensions(int32 *width, int32 *height);
 
     // Return the number of displays.
-    static int DisplayCount();
+    static int32 DisplayCount();
 
     // Return the smallest amount of memory (in bytes) which the VM system
     // will allocate.

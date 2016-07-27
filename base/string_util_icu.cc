@@ -13,15 +13,28 @@
  * limitations under the License.
  */
 
-#include "gtest/gtest.h"
-#include "base/sys_info.h"
 
-#include "test/platform_test.h"
-
-typedef PlatformTest SysInfoTest;
-
-TEST_F(SysInfoTest, NumProcs)
+// UTF-8 <-> WIde
+std::string WideToUTF8(const std::wstring &wide)
 {
-    EXPECT_GE(base::SysInfo::NumberOfProcessors(), 1);
+    std::string ret;
+    if (wide.empty())
+    {
+        return ret;
+    }
+
+    WideToUTF8(wide, wide.length(), &ret);
+    return ret;
 }
 
+bool WideToUTF8(const wchar_t *src, size_t src_len, std::string *output)
+{
+    if (src_len == 0)
+    {
+        output->clear();
+        return true;
+    }
+
+    ReserveUTF8Output(src, src_len, output);
+    return ConvertUnicode<wchar_t, std::string>(src, src_len, output);
+}

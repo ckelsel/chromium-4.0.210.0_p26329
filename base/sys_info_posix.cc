@@ -14,12 +14,14 @@
  */
 #include "base/sys_info.h"
 #include "base/string_util.h"
+#include "base/logging.h"
 
 #include <errno.h>
 #include <string.h>
 #include <sys/statvfs.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #if defined(OS_OPENBSD)
 #include <sys/param.h>
@@ -30,46 +32,97 @@ namespace base
 {
 
 //static 
-int SysInfo::NumberOfProcessors() 
+int32 SysInfo::NumberOfProcessors() 
 {
-    return 0;
+#if defined(OS_OPENBSD)
+#  error "not implement"
+#else
+    int32 res = sysconf(_SC_NPROCESSORS_ONLN);
+    if (res == -1)
+    {
+        NOTREACHED();
+        return 1;
+    }
+
+    return res;
+#endif
 }
 
 //static 
 int64 SysInfo::AmountOfPhysicalMemory()
 {
-    return 0;
+#if defined(OS_OPENBSD)
+#  error "not implement"
+#else
+    int32 pages = sysconf(_SC_PHYS_PAGES);
+    int32 page_size = sysconf(_SC_PAGE_SIZE);
+    if (pages == -1 || page_size == -1)
+    {
+        NOTREACHED();
+        return 0;
+    }
+
+    return static_cast<int64>(pages) * page_size;
+#endif
 }
 
 
 //static 
 int64 SysInfo::AmountOfFreeDiskSpace(const std::wstring &path)
 {
-    return 0;
+    struct statvfs stats;
+    if (statvfs(WideToUTF8(path).c_str(), stats) != 0)
+    {
+        return -1;
+    }
+
+    return static_cast<int64>(stats.f_bavail) * stats.f_frsize;
 }
 
 //static 
 bool SysInfo::HasEnvVar(const wchar_t *var)
 {
-    return 0;
+    std::string var_utf8 = WideToUTF8(std::wstring(var));
+    return getenv(var_utf8.c_str() != NULL);
 }
 
 //static 
 std::wstring SysInfo::GetEnvVar(const wchar_t *var)
 {
-    return 0;
+    std::string var_utf8 = WideToUTF8(std::wstring(var));
+    char *value = var_utf8.c_str();
+    if (!value)
+    {
+        return L"";
+    }
+    else
+    {
+        return UTF8ToWide(value);
+    }
 }
 
 //static 
 std::string SysInfo::OperatingSystemName()
 {
-    return 0;
+    utsname info;
+    if (uname(&info) < 0)
+    {
+        NOTREACHED();
+        return "unknown";
+    }
+    return std::string(info.sysname);
 }
 
 //static 
 std::string SysInfo::OperatingSystemVersion()
 {
-    return 0;
+    utsname info;
+    if (uname(&info) < 0)
+    {
+        NOTREACHED();
+        return "unknown"
+    }
+    return std::string(info.release);
 }
 
 //static 
@@ -77,35 +130,45 @@ void SysInfo::OperatingSystemVersionNumbers(int32 *major_version,
                                   int32 *minor_version,
                                   int32 *bugfix_version)
 {
+    // TODO
 }
 
 //static 
 std::string SysInfo::CPUArchitecture()
 {
-    return 0;
+    utsname info;
+    if (uname(&info) < 0)
+    {
+        NOTREACHED();
+        return "unknown"
+    }
+    return std::string(info.machine);
 }
 
 //static 
-void SysInfo::GetPrimaryDisplayDimensions(int *width, int *height)
+void SysInfo::GetPrimaryDisplayDimensions(int32 *width, int32 *height)
 {
+    // TODO
 }
 
 //static 
-int SysInfo::DisplayCount()
+int32 SysInfo::DisplayCount()
 {
+    // TODO
     return 0;
 }
 
 //static 
 size_t SysInfo::VMAllocationGranularity()
 {
-    return 0;
+    return getpagesize();
 }
 
 #if defined(OS_LINUX)
 //static 
 size_t SysInfo::MaxSharedMemorySize()
 {
+    // TODO
     return 0;
 }
 #endif

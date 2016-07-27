@@ -12,16 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef BASE_LOGGING_H_
+#define BASE_LOGGING_H_
 
-#include "gtest/gtest.h"
-#include "base/sys_info.h"
-
-#include "test/platform_test.h"
-
-typedef PlatformTest SysInfoTest;
-
-TEST_F(SysInfoTest, NumProcs)
-{
-    EXPECT_GE(base::SysInfo::NumberOfProcessors(), 1);
-}
-
+#define NOTREACHED()
+#endif // BASE_LOGGING_H_

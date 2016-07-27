@@ -41,7 +41,7 @@ include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
 file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cc)
 add_executable(${PROJECT_TEST_NAME} ${TEST_SRC_FILES})
 add_dependencies(${PROJECT_TEST_NAME} googletest)
-add_dependencies(${PROJECT_TEST_NAME} ${PROJECT_NAME_STR}_base_impl)
+target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_NAME_STR}_base_impl)
 
 
 if(NOT WIN32)
