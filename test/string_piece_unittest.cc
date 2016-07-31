@@ -93,7 +93,6 @@ TEST(StringPieceTest, CheckComparisonOperators) {
 #undef CMP_N
 }
 
-#if 0
 TEST(StringPieceTest, CheckSTL) {
   StringPiece a("abcdefghijklmnopqrstuvwxyz");
   StringPiece b("abc");
@@ -387,6 +386,7 @@ TEST(StringPieceTest, CheckSTL) {
   ASSERT_EQ(d.find_last_not_of('\0'), StringPiece::npos);
   ASSERT_EQ(e.find_last_not_of('\0'), StringPiece::npos);
 
+#if 0
   ASSERT_EQ(a.substr(0, 3), b);
   ASSERT_EQ(a.substr(23), c);
   ASSERT_EQ(a.substr(23, 3), c);
@@ -398,8 +398,8 @@ TEST(StringPieceTest, CheckSTL) {
   ASSERT_EQ(d.substr(99), e);
   ASSERT_EQ(d.substr(0, 99), e);
   ASSERT_EQ(d.substr(99, 99), e);
+#endif
 }
-
 TEST(StringPieceTest, CheckCustom) {
   StringPiece a("foobar");
   std::string s1("123");
@@ -452,6 +452,7 @@ TEST(StringPieceTest, CheckCustom) {
   ASSERT_TRUE(!b.ends_with(a));
   ASSERT_TRUE(!e.ends_with(a));
 
+#if 0
   // remove_prefix
   StringPiece c(a);
   c.remove_prefix(3);
@@ -495,8 +496,8 @@ TEST(StringPieceTest, CheckCustom) {
   ASSERT_EQ(c, s3);
   std::string s4(e.as_string());
   ASSERT_TRUE(s4.empty());
-}
 #endif
+}
 
 TEST(StringPieceTest, CheckNULL) {
   // we used to crash here, but now we don't.
