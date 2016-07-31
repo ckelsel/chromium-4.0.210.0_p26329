@@ -15,6 +15,15 @@
 #ifndef _BASE_BASICTYPES_H_
 #define _BASE_BASICTYPES_H_
 
+#include <limits.h>
+#include <stddef.h>
+#include <string.h>
+
+#ifndef COMPILER_MSVC
+// stdint.h is part of C99 but MSVC doesn't have it.
+#include <stdint.h>
+#endif
+
 #include "base/port.h"
 
 #if defined(COMPILER_MSVC)

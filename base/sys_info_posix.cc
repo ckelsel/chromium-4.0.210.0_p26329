@@ -12,10 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "base/sys_info.h"
-#include "base/string_util.h"
-#include "base/logging.h"
-
 #include <errno.h>
 #include <string.h>
 #include <sys/statvfs.h>
@@ -27,6 +23,10 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
+
+#include "base/sys_info.h"
+#include "base/string_util.h"
+#include "base/logging.h"
 
 namespace base 
 {
@@ -66,12 +66,16 @@ int64 SysInfo::AmountOfPhysicalMemory()
 #endif
 }
 
+inline std::string WideToUTF8(const std::wstring &wide)
+{
+    return "";
+}
 
 //static 
 int64 SysInfo::AmountOfFreeDiskSpace(const std::wstring &path)
 {
     struct statvfs stats;
-    if (statvfs(WideToUTF8(path).c_str(), stats) != 0)
+    if (statvfs(WideToUTF8(path).c_str(), &stats) != 0)
     {
         return -1;
     }
@@ -83,14 +87,19 @@ int64 SysInfo::AmountOfFreeDiskSpace(const std::wstring &path)
 bool SysInfo::HasEnvVar(const wchar_t *var)
 {
     std::string var_utf8 = WideToUTF8(std::wstring(var));
-    return getenv(var_utf8.c_str() != NULL);
+    return getenv(var_utf8.c_str()) != NULL;
+}
+
+inline std::wstring UTF8ToWide(const char *)
+{
+    return L"";
 }
 
 //static 
 std::wstring SysInfo::GetEnvVar(const wchar_t *var)
 {
     std::string var_utf8 = WideToUTF8(std::wstring(var));
-    char *value = var_utf8.c_str();
+    const char *value = var_utf8.c_str();
     if (!value)
     {
         return L"";
@@ -120,7 +129,7 @@ std::string SysInfo::OperatingSystemVersion()
     if (uname(&info) < 0)
     {
         NOTREACHED();
-        return "unknown"
+        return "unknown";
     }
     return std::string(info.release);
 }
@@ -140,7 +149,7 @@ std::string SysInfo::CPUArchitecture()
     if (uname(&info) < 0)
     {
         NOTREACHED();
-        return "unknown"
+        return "unknown";
     }
     return std::string(info.machine);
 }

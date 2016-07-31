@@ -51,7 +51,7 @@ private:
 public:
     StringPiece() : ptr_(NULL), length_(0) { }
     StringPiece(const char *str) 
-        : ptr_(str), length((str == NULL) ? 0 : strlen(str)) { }
+        : ptr_(str), length_((str == NULL) ? 0 : strlen(str)) { }
     StringPiece(const std::string &str)
         : ptr_(str.data()), length_(str.length()) { }
     StringPiece(const char *offset, size_type len)
@@ -65,7 +65,7 @@ public:
 
     size_type length() const { return length_; }
 
-    bool empty const { return length_ == 0; }
+    bool empty() const { return length_ == 0; }
 
 
     void clear() 
@@ -88,7 +88,7 @@ public:
 
     void set(const void *data, size_type len)
     {
-        ptr = reinterpret_cast<const char*>(data);
+        ptr_ = reinterpret_cast<const char*>(data);
         length_ = len;
     }
 
@@ -111,7 +111,7 @@ public:
             {
                 r = -1;
             }
-            else if (length_ > x.length)
+            else if (length_ > x.length_)
             {
                 r = 1;
             }
@@ -133,7 +133,7 @@ public:
     bool starts_with(const StringPiece &x) const
     {
         return ((length_ >= x.length_) &&
-                (wordmemcmp(ptr, x.length_, x.length_) == 0));
+                (wordmemcmp(ptr_, x.ptr_, x.length_) == 0));
     }
 
     bool ends_with(const StringPiece &x) const
@@ -160,9 +160,9 @@ public:
 
     iterator end() { return ptr_ + length_; }
 
-    const_reverse_iterator rbegin() { return ptr_ + length_; }
+    const_reverse_iterator rbegin() { return const_reverse_iterator(ptr_ + length_); }
     
-    const_reverse_iterator rend() { return ptr_; }
+    const_reverse_iterator rend() { return const_reverse_iterator(ptr_); }
 
 
     size_type max_size() const { return length_; }
@@ -172,8 +172,19 @@ public:
     size_type copy(char *buf, size_type n, size_type pos = 0) const;
 
 
+    // Finds the first substring equal to the given character sequence.
+    // Search begins at pos, 
+    // i.e. the found substring must not begin in a position preceding pos.
+    //
+    // @return Position of the first character of the found substring or npos if no such
+    // substring is found.
     size_type find(const StringPiece &s, size_type pos = 0) const;
     size_type find(char c, size_type pos = 0) const;
+
+    // Finds the last substring equal to the given character sequence. Search
+    // begins at pos, i.e. the found substring must not begin in a position
+    // following pos. If npos or any value not smaller than size()-1 is passed
+    // as pos, whole string will be searched.
     size_type rfind(const StringPiece &s, size_type pos = npos) const;
     size_type rfind(char c, size_type pos = npos) const;
 
@@ -199,7 +210,7 @@ public:
         return memcmp(p, p2, N);
     }
 
-} // class StringPiece
+}; // class StringPiece
 
 bool operator==(const StringPiece &x, const StringPiece &y);
 

@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#if 0
 
 // UTF-8 <-> WIde
 std::string WideToUTF8(const std::wstring &wide)
@@ -38,3 +39,4 @@ bool WideToUTF8(const wchar_t *src, size_t src_len, std::string *output)
     ReserveUTF8Output(src, src_len, output);
     return ConvertUnicode<wchar_t, std::string>(src, src_len, output);
 }
+#endif

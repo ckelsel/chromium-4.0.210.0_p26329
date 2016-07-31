@@ -4,6 +4,7 @@ include_directories(${COMMON_INCLUDES})
 
 set (SRC_FILES string16.cc)
 set (SRC_FILES ${SRC_FILES} string_util.cc)
+set (SRC_FILES ${SRC_FILES} string_piece.cc)
 
 if(NOT WIN32)
 file(GLOB SRC_FILES ${SRC_FILES} *posix.cc)
