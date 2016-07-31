@@ -71,12 +71,14 @@ int64 SysInfo::AmountOfFreeDiskSpace(const std::wstring &path)
 // static 
 bool SysInfo::HasEnvVar(const wchar_t *var)
 {
-    return GetEnvironmentVariable(var, NULL, 0) != 0;
+    return GetEnvironmentVariableW(var, NULL, 0) != 0;
 }
 
 // static 
 std::wstring SysInfo::GetEnvVar(const wchar_t *var)
 {
+
+    (void *)var;
     //TODO
     return L"";
 }
@@ -95,11 +97,11 @@ std::string SysInfo::OperatingSystemVersion()
     GetVersionEx(&info);
 
     // TODO
-    return L"";
+    return "";
 }
 
 // static 
-void SysInfo::OperatingSystemVersionNumbers(int32 *major_version
+void SysInfo::OperatingSystemVersionNumbers(int32 *major_version,
                                           int32 *minor_version,
                                           int32 *bugfix_version)
 {
