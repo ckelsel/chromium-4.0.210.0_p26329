@@ -269,8 +269,113 @@ struct CheckOpString
     std::string str_;
 };
 
+
+
+// Plus some debug-logging macros that get compiled to nothing for production
+//
+// DEBUG_MODE is for uses like
+//   if (DEBUG_MODE) foo.CheckThatFoo();
+// instead of
+//   #ifndef NDEBUG
+//     foo.CheckThatFoo();
+//   #endif
+
+#ifndef NDEBUG
+
+#define DLOG(severity) LOG(severity)
+#define DLOG_IF(severity, condition) LOG_IF(severity, condition)
+#define DLOG_ASSERT(condition) LOG_ASSERT(condition)
+
+// debug-only checking.  not executed in NDEBUG mode.
+enum { DEBUG_MODE = 1 };
+#define DCHECK(condition) CHECK(condition)
+
+#else // NDEBUG
+
+#define DLOG(severity) \
+    true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
+
+#define DLOG_IF(severity, condition) \
+    true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
+
+#define DLOG_ASSERT(condition) \
+    true ? (void) 0 : LOG_ASSERT(condition) 
+
+enum { DEBUG_MODE = 0 };
+#define DCHECK(condition) \
+    true ? (void) 0 : CHECK(condition)
+
+#endif // NDEBUG
+
+#define NOTREACHED() DCHECK(false)
+
+// Redefine the standard assert to use our nice log files
+#define assert(x) DLOG_ASSERT(x)
+
+
+
+// This class more or less represents a particular log message.  You
+// // create an instance of LogMessage and then stream stuff to it.
+// When you finish streaming to it, ~LogMessage is called and the
+// full message gets streamed to the appropriate destination.
+//
+// You shouldn't actually use LogMessage's constructor to log things,
+// though.  You should use the LOG() macro (and variants thereof)
+// above.
+class LogMessage
+{
+
+public:
+
+    LogMessage(const char *file, int32 line, LogSeverity severity, int32 ctr);
+
+    // Two special constructors that generate reduced amounts of code at
+    // LOG call sites for common cases.
+    //
+    // Used for LOG(INFO): Implied are:
+    // severity = LOG_INFO, ctr = 0
+    //
+    // Using this constructor instead of the more complex constructor above
+    // saves a couple of bytes per call site.
+    LogMessage(const char *file, int32 line);
+
+
+      // Used for LOG(severity) where severity != INFO.  Implied
+      // are: ctr = 0
+      //
+      // Using this constructor instead of the more complex constructor above
+      // saves a couple of bytes per call site.
+    LogMessage(const char *file, int32 line, LogSeverity severity);
+    
+    ~LogMessage();
+
+    std::ostream &stream { return stream_; }
+
+private:
+    
+    void Init(const char *file, int32 line);
+
+    LogSeverity severity_;
+    std::ostream stream_;
+    int32 message_start_;
+
+    DISALLOW_COPY_AND_ASSIGN(LogMessage);
+}; // class LogMessage
+
+// This class is used to explicitly ignore values in the conditional
+// logging macros.  This avoids compiler warnings like "value computed
+// is not used" and "statement has no effect".
+class LogMessageVoidify
+{
+
+public:
+
+    LogMessageVoidify() { }
+
+    void operator&(std::ostream) { }
+};
+
 } // namespace logging 
 
-#define NOTREACHED()
 
 #endif // BASE_LOGGING_H_

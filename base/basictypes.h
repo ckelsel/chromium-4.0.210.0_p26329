@@ -74,6 +74,14 @@ const  int32 kint32min  = (( int32) 0x80000000);
 const  int64 kint64max  = (( int64) GG_INT64_C(0x7FFFFFFFFFFFFFFF));
 const  int64 kint64min  = (( int64) GG_INT64_C(0x8000000000000000));
 
+
+// A macro to disallow the copy constructor and operator= functions
+// This should be used in the private: declarations for a class
+#define DISALLOW_COPY_AND_ASSIGN(TypeName)  \
+    TypeName(const TypeName&);              \
+    void operator=(const TypeName&);
+    
+
 #if defined(COMPILER_MSVC)
 #pragma warning (pop)
 #endif
