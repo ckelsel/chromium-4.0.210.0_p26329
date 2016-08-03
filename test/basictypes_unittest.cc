@@ -18,17 +18,17 @@
 
 TEST(basictypes_unittest, size)
 {
-    EXPECT_EQ(sizeof(schar), 1);
-    EXPECT_EQ(sizeof(int8),  1);
-    EXPECT_EQ(sizeof(int16), 2);
-    EXPECT_EQ(sizeof(int32), 4);
-    EXPECT_EQ(sizeof(int64), 8);
+    EXPECT_EQ(sizeof(schar), (uint32)1);
+    EXPECT_EQ(sizeof(int8),  (uint32)1);
+    EXPECT_EQ(sizeof(int16), (uint32)2);
+    EXPECT_EQ(sizeof(int32), (uint32)4);
+    EXPECT_EQ(sizeof(int64), (uint32)8);
 
-    EXPECT_EQ(sizeof(uchar), 1);
-    EXPECT_EQ(sizeof(uint8), 1);
-    EXPECT_EQ(sizeof(uint16), 2);
-    EXPECT_EQ(sizeof(uint32), 4);
-    EXPECT_EQ(sizeof(uint64), 8);
+    EXPECT_EQ(sizeof(uchar),  (uint32)1);
+    EXPECT_EQ(sizeof(uint8),  (uint32)1);
+    EXPECT_EQ(sizeof(uint16), (uint32)2);
+    EXPECT_EQ(sizeof(uint32), (uint32)4);
+    EXPECT_EQ(sizeof(uint64), (uint32)8);
 }
 
 TEST(basictypes_unittest, compare)

@@ -4,6 +4,7 @@ include_directories(${COMMON_INCLUDES})
 
 set (SRC_FILES string_util.cc)
 set (SRC_FILES ${SRC_FILES} string_piece.cc)
+set (SRC_FILES ${SRC_FILES} logging.cc)
 
 if (NOT WIN32)
 set (SRC_FILES ${SRC_FILES} string16.cc)
@@ -15,5 +16,10 @@ else()
 file(GLOB SRC_FILES ${SRC_FILES} *win.cc)
 endif()
 
+if(NOT WIN32)
+    set (EXT_LIBS rt)
+endif()
+
 add_library(${PROJECT_LIB_NAME} ${SRC_FILES})
+target_link_libraries(${PROJECT_LIB_NAME} ${EXT_LIBS})
 

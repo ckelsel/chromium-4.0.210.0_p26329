@@ -147,10 +147,10 @@ enum OldFileDeletionState
 // directory. You probably don't want this, especially since the program
 // directory may not be writable on an enduser's system.
 #if defined(OS_WIN)
-void InitLogging(const wchar_t *log_file, LoggingDestination logging_dest,
+void InitLogging(const wchar_t *new_log_file, LoggingDestination logging_dest,
                  LogLockingState lock_log, OldFileDeletionState delete_old);
 #elif defined(OS_POSIX)
-void InitLogging(const char *log_file, LoggingDestination logging_dest,
+void InitLogging(const char *new_log_file, LoggingDestination logging_dest,
                  LogLockingState lock_log, OldFileDeletionState delete_old);
 #endif
 
@@ -242,32 +242,20 @@ const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
 #define LOG(severity) COMPACT_GOOGLE_LOG_ ## severity.stream()
 #define SYSLOG(severity) LOG(severity)
 
-//FIXME
 #define LOG_IF(severity, condition) \
-    !(condition) ? (void) 0 : LOG(severity) 
+    !(condition) ? (void) 0 : logging::LogMessageVoidify() & LOG(severity) 
 #define SYSLOG_IF(severity, condition) LOG_IF(severity, condition)
 
 #define LOG_ASSERT(condition) \
-    LOG_IF(LOG_FATAL, !(condition)) << "Assert failed: " #condition "."
+    LOG_IF(FATAL, !(condition)) << "Assert failed: " #condition "."
 #define SYSLOG_ASSERT(condition) \
-    SYSLOG_IF(LOG_FATAL, !(condition)) << "Assert failed: " #condition "."
+    SYSLOG_IF(FATAL, !(condition)) << "Assert failed: " #condition "."
 
 // CHECK dies with a fatal error if condition is not true.  It is *not*
 // controlled by NDEBUG, so the check will be executed regardless of
 // compilation mode.
 #define CHECK(condition) \
-    LOG_IF(LOG_FATAL, !(condition)) << "Check failed: " #condition "."
-
-// A container for a string pointer which can be evaluated to a bool -
-// true if the pointer is NULL.
-struct CheckOpString
-{
-    CheckOpString(std::string str) : str_(str) { }
-    // No destructor: if str_ is non-NULL, we're about to LOG(FATAL),
-    // so there's no point in cleaning up str_.
-    operator bool() const { return str_ != NULL; }
-    std::string str_;
-};
+    LOG_IF(FATAL, !(condition)) << "Check failed: " #condition "."
 
 
 
@@ -309,10 +297,6 @@ enum { DEBUG_MODE = 0 };
 
 #define NOTREACHED() DCHECK(false)
 
-// Redefine the standard assert to use our nice log files
-#define assert(x) DLOG_ASSERT(x)
-
-
 
 // This class more or less represents a particular log message.  You
 // // create an instance of LogMessage and then stream stuff to it.
@@ -349,15 +333,35 @@ public:
     
     ~LogMessage();
 
-    std::ostream &stream { return stream_; }
+    std::ostream &stream() { return stream_; }
 
 private:
     
     void Init(const char *file, int32 line);
 
     LogSeverity severity_;
-    std::ostream stream_;
+    std::ostringstream stream_;
     int32 message_start_;
+
+#if defined(OS_WIN)
+      // Stores the current value of GetLastError in the constructor and restores
+      // it in the destructor by calling SetLastError.
+      // This is useful since the LogMessage class uses a lot of Win32 calls
+      // that will lose the value of GLE and the code that called the log function
+      // will have lost the thread error value when the log call returns.
+    class SaveLastError
+    {
+    public:
+        SaveLastError() : error_(::GetLastError()) { }
+
+        ~SaveLastError() { ::SetLastError(error_); }
+
+    private:
+        uint32 error_;
+    };
+
+    SaveLastError last_error_;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(LogMessage);
 }; // class LogMessage
@@ -367,12 +371,11 @@ private:
 // is not used" and "statement has no effect".
 class LogMessageVoidify
 {
-
 public:
 
     LogMessageVoidify() { }
 
-    void operator&(std::ostream) { }
+    void operator&(std::ostream&) { }
 };
 
 } // namespace logging 
