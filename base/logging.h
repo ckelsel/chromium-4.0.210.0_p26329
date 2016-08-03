@@ -158,10 +158,10 @@ void InitLogging(const char *new_log_file, LoggingDestination logging_dest,
 // log file/displayed to the user (if applicable). Anything below this level
 // will be silently ignored. The log level defaults to 0 (everything is logged)
 // if this function is not called.
-void SetMinLogLevel(int32 level);
+void SetLogMinLevel(int32 level);
 
 // Gets the current log level
-int32 GetMinLogLevel();
+int32 GetLogMinLevel();
 
 
 // Sets the log filter prefix.  Any log message below LOG_ERROR severity that
@@ -247,15 +247,15 @@ const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
 #define SYSLOG_IF(severity, condition) LOG_IF(severity, condition)
 
 #define LOG_ASSERT(condition) \
-    LOG_IF(FATAL, !(condition)) << "Assert failed: " #condition "."
+    LOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
 #define SYSLOG_ASSERT(condition) \
-    SYSLOG_IF(FATAL, !(condition)) << "Assert failed: " #condition "."
+    SYSLOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
 
 // CHECK dies with a fatal error if condition is not true.  It is *not*
 // controlled by NDEBUG, so the check will be executed regardless of
 // compilation mode.
 #define CHECK(condition) \
-    LOG_IF(FATAL, !(condition)) << "Check failed: " #condition "."
+    LOG_IF(FATAL, !(condition)) << "Check failed: " #condition ". "
 
 
 

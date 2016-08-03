@@ -46,20 +46,18 @@ typedef pthread_mutex_t* MutexHandle;
 namespace logging
 {
 
-bool g_enable_dcheck = false;
-
 const char* const log_severity_names[LOG_NUM_SEVERITY] = 
 {
     "INFO", "WARNING", "ERROR", "ERROR_REPORT", "FATAL"
 };
 
-int32 min_log_level = 0;
+int32 log_min_level = 0;
 LogLockingState lock_log_file = LOCK_LOG_FILE;
 
 // The lock is used if log file locking is false. It helps us avoid problems
 // with multiple threads writing to the log file at the same time.  Use
 // LockImpl directly instead of using Lock, because Lock makes logging calls.
-//static LockImpl *log_lock = NULL;
+static LockImpl *log_lock = NULL;
 
 // The default set here for logging_destination will only be used if
 // InitLogging is not called.  On Windows, use a file next to the exe;
@@ -81,8 +79,12 @@ const int32 kAlwaysPrintErrorLevel = LOG_ERROR;
 // because LockFileEx is not thread safe.
 #if defined(OS_WIN)
 MutexHandle log_mutex = NULL;
+# define ACQUIRE_MUTEX(mutex) ::WaitforSingleObject(mutex, INFINITE)
+# define RELEASE_MUTEX(mutex) ReleaseMutex(mutex)
 #elif defined(OS_POSIX)
 pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
+# define ACQUIRE_MUTEX(mutex) pthread_mutex_lock(&mutex)
+# define RELEASE_MUTEX(mutex) pthread_mutex_unlock(&mutex)
 #endif
 
 
@@ -175,27 +177,143 @@ void DeleteFilePath(const PathString &log_name)
 // initialized. debug_file will be NULL in this case.
 bool InitializeLogFileHandle()
 {
-    return false;
+    if (log_file)
+    {
+        return true;
+    }
+
+    if (!log_file_name)
+    {
+        // Nobody has called InitLogging to specify a debug log file, so here we
+        // initialize the log file name to a default.
+#if defined(OS_WIN)
+        // On Windows we use the same path as the exe.
+        wchar_t module_name[MAX_PATH];
+        GetModuleFileName(NULL, module_name, MAX_PATH);
+        log_file_name = new std::wstring(module_name);
+        std::wstring::size_type last_backslash = 
+            log_file_name->rfind('\\', log_file_name->length());
+
+        if (last_backslash != std::wstring::npos)
+        {
+            log_file_name->erase(last_backslash + 1);
+        }
+        *log_file_name += L"debug.log";
+#elif defined(OS_POSIX)
+        // On other platforms we just use the current directory.
+        log_file_name = new std::string("debug.log");
+#endif
+    }
+
+    if (logging_destination == LOG_ONLY_TO_FILE ||
+        logging_destination == LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG)
+    {
+#if defined(OS_WIN)
+        log_file = CreateFile(log_file_name->c_str(),
+                              GENERIC_WRITE,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE,
+                              NULL,
+                              OPEN_ALWAYS,
+                              FILE_ATTRIBUTE_NORMAL,
+                              NULL);
+        if (log_file == INVALID_HANDLE_VALUE)
+        {
+            // try the current directory
+            log_file = CreateFile(L".\\debug.log",
+                                  GENERIC_WRITE,
+                                  FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                  NULL,
+                                  OPEN_ALWAYS,
+                                  FILE_ATTRIBUTE_NORMAL,
+                                  NULL);
+            if (log_file == INVALID_HANDLE_VALUE)
+            {
+                log_file = NULL;
+                return false;
+            }
+        }
+#elif defined(OS_POSIX)
+        log_file = fopen(log_file_name->c_str(), "a");
+        if (log_file == NULL)
+        {
+            return false;
+        }
+#endif
+    }
+
+    return true;
 }
 
 void InitLogMutex()
 {
+#if defined(OS_WIN)
+    if (!log_mutex)
+    {
+        // \ is not a legal character in mutex names so we replace \ with /
+        std::wstring safe_name(*log_file_name);
+        std::replace(safe_name.begin(), safe_name.end(), '\\', '/');
+
+        std::wstring t(L"Global\\");
+        t.append(safe_name);
+        log_mutex = ::CreateMutex(NULL, FALSE, t.c_str());
+    }
+#elif defined(OS_POSIX)
+    // statically initialized
+#endif
 }
 
 
 void InitLogging(const PathChar *new_log_file, LoggingDestination logging_dest,
                  LogLockingState lock_log, OldFileDeletionState delete_old)
 {
+    if (log_file)
+    {
+        CloseFile(log_file);
+        log_file = NULL;
+    }
+
+    lock_log_file = lock_log;
+    logging_destination = logging_dest;
+    
+    // ignore file options if logging is disabled or only to system
+    if (logging_destination == LOG_NONE ||
+        logging_destination == LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG)
+    {
+        return;
+    }
+
+    if (!log_file_name)
+    {
+        log_file_name = new PathString();
+    }
+    *log_file_name = new_log_file;
+
+    if (delete_old == DELETE_OLD_LOG_FILE)
+    {
+        DeleteFilePath(*log_file_name);
+    }
+
+    // initialize lock
+    if (lock_log_file == LOCK_LOG_FILE)
+    {
+        InitLogMutex();
+    }
+    else if (!log_lock)
+    {
+        log_lock = new LockImpl();
+    }
+
+    InitializeLogFileHandle();
 }
 
-void setMinLogLevel(int32 level)
+void SetLogMinLevel(int32 level)
 {
-    min_log_level = level;
+    log_min_level = level;
 }
 
-int32 GetMinLogLevel()
+int32 GetLogMinLevel()
 {
-    return min_log_level;
+    return log_min_level;
 }
 
 void SetLogFilterPrefix(const char *filter)
@@ -246,23 +364,172 @@ void DisplayDebugMessage(const std::string &str)
 // LogMessage
 
 LogMessage::LogMessage(const char *file, int32 line, LogSeverity severity, int32 ctr)
+    : severity_ (severity)
 {
+    Init(file, line);
 }
 
 LogMessage::LogMessage(const char *file, int32 line)
+    : severity_ (LOG_INFO)
 {
+    Init(file, line);
 }
 
 LogMessage::LogMessage(const char *file, int32 line, LogSeverity severity)
+    : severity_ (severity)
 {
+    Init(file, line);
 }
 
 LogMessage::~LogMessage()
 {
+    if (severity_ < log_min_level)
+    {
+        return;
+    }
+
+    std::string str_newline(stream_.str());
+#if defined(OS_WIN)
+    str_newline.append("\r\n");
+#elif defined(OS_POSIX)
+    str_newline.append("\n");
+#endif
+
+    if (log_filter_prefix && severity_ <= kMaxFilteredLogLevel &&
+        str_newline.compare(message_start_, log_filter_prefix->size(),
+                            log_filter_prefix->data()) != 0)
+    {
+        return;
+    }
+
+    if (logging_destination == LOG_ONLY_TO_SYSTEM_DEBUG_LOG ||
+        logging_destination == LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG)
+    {
+        // System debugger
+#if defined(OS_WIN)
+        OutputDebugStringA(str_newline.c_str());
+#endif
+        fprintf(stderr, "%s", str_newline.c_str());
+    }
+    else if (severity_ >= kAlwaysPrintErrorLevel)
+    {
+        // When we're only outputting to a log file, above a certain log level, we
+        // should still output to stderr so that we can better detect and diagnose
+        // problems with unit tests, especially on the buildbots.
+        fprintf(stderr, "%s", str_newline.c_str());
+    }
+
+
+    // log to file
+    if (logging_destination != LOG_NONE &&
+        logging_destination != LOG_ONLY_TO_SYSTEM_DEBUG_LOG &&
+        InitializeLogFileHandle())
+    {
+        // We can have multiple threads and/or processes, so try to prevent them
+        // from clobbering each other's writes.
+        if (lock_log_file == LOCK_LOG_FILE)
+        {
+            // Ensure that the mutex is initialized in case the client app did not
+            // call InitLogging. This is not thread safe. See below.
+            InitLogMutex();
+
+            ACQUIRE_MUTEX(log_mutex);
+        }
+        else
+        {
+            if (!log_lock)
+            {
+                log_lock = new LockImpl();
+            }
+            log_lock->Lock();
+        }
+
+        // write
+#if defined(OS_WIN)
+        SetFilePointer(log_file, 0, 0, SEEK_END);
+        uint32 num_written;
+        WriteFile(log_file,
+                  static_cast<const void *>(str_newline.c_str()),
+                  static_cast<uint32>(str_newline.length()),
+                  &num_written,
+                  NULL);
+#elif defined(OS_POSIX)
+        fprintf(log_file, "%s", str_newline.c_str());
+#endif
+
+        // unlock
+        if (lock_log_file == LOCK_LOG_FILE)
+        {
+            RELEASE_MUTEX(log_mutex);
+        }
+        else
+        {
+            log_lock->Unlock();
+        }
+    }
+
+    // TODO
+    if (severity_ == LOG_FATAL)
+    {
+    }
+
 }
 
 void LogMessage::Init(const char *file, int line)
 {
+#if defined(OS_WIN)
+    const int32 slash = '\\';
+#elif defined(OS_POSIX)
+    const int32 slash = '/';
+#endif
+    const char *last_slash = strrchr(file, slash);
+    if (last_slash)
+    {
+        // log only file name
+        file = last_slash + 1;
+    }
+
+    stream_ << '[';
+
+    if (log_process_id)
+    {
+        stream_ << CurrentProcessId() << ':';
+    }
+
+    if (log_thread_id)
+    {
+        stream_ << CurrentThreadID() << ':';
+    }
+
+    if (log_timestamp)
+    {
+        time_t t = time(NULL);
+        struct tm local_time = { 0 };
+#if defined(OS_WIN)
+        localtime_s(&local_time, &t);
+#elif defined(OS_POSIX)
+        localtime_r(&t, &local_time);
+#endif
+        struct tm *tm_time = &local_time;
+        stream_ << std::setfill('0')
+                << std::setw(2) << tm_time->tm_mon + 1
+                << std::setw(2) << tm_time->tm_mday
+                << '/'
+                << std::setw(2) << tm_time->tm_hour
+                << std::setw(2) << tm_time->tm_min
+                << std::setw(2) << tm_time->tm_sec
+                << ':';
+    }
+
+    if (log_tickcount)
+    {
+        stream_ << TickCount() << ':';
+    }
+
+    stream_ << log_severity_names[severity_]
+            << ':' << file << "(" << line << ")] ";
+    
+    message_start_ = stream_.tellp();
 }
 
 

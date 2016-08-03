@@ -6,6 +6,7 @@ if [ -d build ]; then
 
     rm -rf base
     rm _test
+    rm -rf CMakeFiles/_test.dir
 
     cmake ..
     cmake --build .

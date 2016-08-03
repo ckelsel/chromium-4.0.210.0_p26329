@@ -15,13 +15,14 @@
 #ifndef BASE_LOCK_IMPL_H_
 #define BASE_LOCK_IMPL_H_
 
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(OS_POSIX)
 #include <pthread.h>
 #endif
 
-#include "build/build_config.h"
 #include "base/basictypes.h"
 
 // This class implements the underlying platform-specific spin-lock mechanism
@@ -29,6 +30,42 @@
 // should instead use Lock.
 class LockImpl
 {
+
+public:
+
+#if defined(OS_WIN)
+    typedef CRITICAL_SECTION OSLockType;
+#elif defined(OS_POSIX)
+    typedef pthread_mutex_t OSLockType;
+#endif
+
+    LockImpl();
+
+    ~LockImpl();
+
+    // If the lock is not held, take it and return true.  If the lock is already
+    // held by something else, immediately return false
+    bool Try();
+
+    // Take the lock, blocking until it is available if necessary.
+    void Lock();
+
+    // Release the lock.  This must only be called by the lock's holder: after
+    // a successful call to Try, or a call to Lock.
+    void Unlock();
+
+
+    // Debug-only method that will DCHECK() if the lock is not acquired by the
+    // current thread.  In non-debug builds, no check is performed.
+    // Because linux and mac condition variables modify the underlyning lock
+    // through the os_lock() method, runtime assertions can not be done on those
+    // builds.
+#if defined(NDEBUG) || !defined(OS_WIN)
+    void AssertAcquired() const { }
+#else
+    void AssertAcquired() const;
+#endif
+
 }; // class LockImpl
 
 #endif // BASE_LOCK_IMPL_H_
