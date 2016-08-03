@@ -535,6 +535,7 @@ void LogMessage::Init(const char *file, int line)
     message_start_ = (size_t)stream_.tellp();
 }
 
+#if defined(OS_WIN)
 LogMessage::SaveLastError::SaveLastError() 
     : error_(GetLastError())
 {
@@ -544,6 +545,7 @@ LogMessage::SaveLastError::~SaveLastError()
 { 
     SetLastError(error_);
 }
+#endif
 
 
 } // namespace logging
