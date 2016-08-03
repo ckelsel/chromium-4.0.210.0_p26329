@@ -23,6 +23,7 @@ typedef HANDLE MutexHandle;
 #include <time.h>
 #endif
 
+
 #if defined(OS_POSIX)
 #include <stdlib.h>
 #include <stdio.h>
@@ -79,7 +80,7 @@ const int32 kAlwaysPrintErrorLevel = LOG_ERROR;
 // because LockFileEx is not thread safe.
 #if defined(OS_WIN)
 MutexHandle log_mutex = NULL;
-# define ACQUIRE_MUTEX(mutex) ::WaitforSingleObject(mutex, INFINITE)
+# define ACQUIRE_MUTEX(mutex) WaitForSingleObject(mutex, INFINITE)
 # define RELEASE_MUTEX(mutex) ReleaseMutex(mutex)
 #elif defined(OS_POSIX)
 pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -166,7 +167,7 @@ void CloseFile(FileHandle log)
 void DeleteFilePath(const PathString &log_name)
 {
 #if defined(OS_WIN)
-    DeleteFile(log_name.c_str());
+    DeleteFileW(log_name.c_str());
 #elif defined(OS_POSIX)
     unlink(log_name.c_str());
 #endif
@@ -189,7 +190,7 @@ bool InitializeLogFileHandle()
 #if defined(OS_WIN)
         // On Windows we use the same path as the exe.
         wchar_t module_name[MAX_PATH];
-        GetModuleFileName(NULL, module_name, MAX_PATH);
+        GetModuleFileNameW(NULL, module_name, MAX_PATH);
         log_file_name = new std::wstring(module_name);
         std::wstring::size_type last_backslash = 
             log_file_name->rfind('\\', log_file_name->length());
@@ -209,7 +210,7 @@ bool InitializeLogFileHandle()
         logging_destination == LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG)
     {
 #if defined(OS_WIN)
-        log_file = CreateFile(log_file_name->c_str(),
+        log_file = CreateFileW(log_file_name->c_str(),
                               GENERIC_WRITE,
                               FILE_SHARE_READ | FILE_SHARE_WRITE,
                               NULL,
@@ -219,7 +220,7 @@ bool InitializeLogFileHandle()
         if (log_file == INVALID_HANDLE_VALUE)
         {
             // try the current directory
-            log_file = CreateFile(L".\\debug.log",
+            log_file = CreateFileW(L".\\debug.log",
                                   GENERIC_WRITE,
                                   FILE_SHARE_READ | FILE_SHARE_WRITE,
                                   NULL,
@@ -255,7 +256,7 @@ void InitLogMutex()
 
         std::wstring t(L"Global\\");
         t.append(safe_name);
-        log_mutex = ::CreateMutex(NULL, FALSE, t.c_str());
+        log_mutex = ::CreateMutexW(NULL, FALSE, t.c_str());
     }
 #elif defined(OS_POSIX)
     // statically initialized
@@ -358,6 +359,7 @@ void SetReportHandlerFunction(LogReportHandlerFunction handler)
 // message box.
 void DisplayDebugMessage(const std::string &str)
 {
+    (void)str;
 }
 
 
@@ -366,6 +368,7 @@ void DisplayDebugMessage(const std::string &str)
 LogMessage::LogMessage(const char *file, int32 line, LogSeverity severity, int32 ctr)
     : severity_ (severity)
 {
+    (void)ctr;
     Init(file, line);
 }
 
@@ -447,7 +450,7 @@ LogMessage::~LogMessage()
         // write
 #if defined(OS_WIN)
         SetFilePointer(log_file, 0, 0, SEEK_END);
-        uint32 num_written;
+        DWORD num_written;
         WriteFile(log_file,
                   static_cast<const void *>(str_newline.c_str()),
                   static_cast<uint32>(str_newline.length()),
@@ -529,9 +532,18 @@ void LogMessage::Init(const char *file, int line)
     stream_ << log_severity_names[severity_]
             << ':' << file << "(" << line << ")] ";
     
-    message_start_ = stream_.tellp();
+    message_start_ = (size_t)stream_.tellp();
 }
 
+LogMessage::SaveLastError::SaveLastError() 
+    : error_(GetLastError())
+{
+}
+
+LogMessage::SaveLastError::~SaveLastError() 
+{ 
+    SetLastError(error_);
+}
 
 
 } // namespace logging

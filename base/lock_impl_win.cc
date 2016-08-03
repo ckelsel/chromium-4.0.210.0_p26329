@@ -36,6 +36,6 @@ void LockImpl::Unlock()
 {
 }
 
-void AssertAcquired() const
+void LockImpl::AssertAcquired() const
 {
 }

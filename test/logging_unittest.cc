@@ -102,8 +102,13 @@ TEST(logging, items)
 
 TEST(logging, initlog)
 {
+#if defined(OS_WIN)
+    logging::InitLogging(L"mydebug.log", logging::LOG_ONLY_TO_FILE,
+                         logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
+#elif defined(OS_POSIX)
     logging::InitLogging("mydebug.log", logging::LOG_ONLY_TO_FILE,
                          logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
+#endif
 
     logging::SetLogMinLevel(logging::LOG_INFO);
     logging::SetLogFilterPrefix(NULL);

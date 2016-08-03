@@ -341,7 +341,7 @@ private:
 
     LogSeverity severity_;
     std::ostringstream stream_;
-    int32 message_start_;
+    size_t message_start_;
 
 #if defined(OS_WIN)
       // Stores the current value of GetLastError in the constructor and restores
@@ -352,9 +352,9 @@ private:
     class SaveLastError
     {
     public:
-        SaveLastError() : error_(::GetLastError()) { }
+        SaveLastError();
 
-        ~SaveLastError() { ::SetLastError(error_); }
+        ~SaveLastError();
 
     private:
         uint32 error_;
