@@ -17,25 +17,38 @@
 
 LockImpl::LockImpl()
 {
+#ifndef NDEBUG
+#endif
+    ::InitializeCriticalSectionAndSpinCount(&os_lock_, 2000);
 }
 
 LockImpl::~LockImpl()
 {
+    ::DeleteCriticalSection(&os_lock_);
 }
 
 bool LockImpl::Try()
 {
+    if (::TryEnterCriticalSection(&os_lock_) != FALSE)
+    {
+        return true;
+    }
+
     return false;
 }
 
 void LockImpl::Lock()
 {
+    ::EnterCriticalSection(&os_lock_);
 }
 
 void LockImpl::Unlock()
 {
+    ::LeaveCriticalSection(&os_lock_);
 }
 
+#if !defined(NDEBUG) && defined(OS_WIN)
 void LockImpl::AssertAcquired() const
 {
 }
+#endif

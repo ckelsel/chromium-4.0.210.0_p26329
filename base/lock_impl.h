@@ -66,6 +66,11 @@ public:
     void AssertAcquired() const;
 #endif
 
+private:
+
+    OSLockType os_lock_;
+
+    DISALLOW_COPY_AND_ASSIGN(LockImpl);
 }; // class LockImpl
 
 #endif // BASE_LOCK_IMPL_H_
