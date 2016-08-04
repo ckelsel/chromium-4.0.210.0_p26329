@@ -12,6 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <sys/syscall.h>
+#include <errno.h>
+#include <sched.h>
+
 #include "base/platform_thread.h"
 #include "base/logging.h"
 

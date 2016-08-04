@@ -26,13 +26,13 @@ LockImpl::LockImpl()
     DCHECK(rv == 0);
     rv = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
     DCHECK(rv == 0);
-    rv = pthread_mutex_init(&os_lock, &mta);
+    rv = pthread_mutex_init(&os_lock_, &attr);
     DCHECK(rv == 0);
     rv = pthread_mutexattr_destroy(&attr);
     DCHECK(rv == 0);
 #else
     // In release, go with the default lock attributes.
-    pthread_mutex_init(&os_lock_);
+    pthread_mutex_init(&os_lock_, NULL);
 #endif
 }
 
@@ -45,7 +45,7 @@ LockImpl::~LockImpl()
 bool LockImpl::Try()
 {
     int rv = pthread_mutex_trylock(&os_lock_);
-    DCHECK(rv == 0 || rv = EBUSY);
+    DCHECK(rv == 0 || rv == EBUSY);
     return rv == 0;
 }
 
