@@ -44,6 +44,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/string_util.h"
 #include "base/lock_impl.h"
 #include "base/debug_util.h"
+#include "base/sys_string_conversions.h"
 
 namespace logging
 {
@@ -393,7 +394,7 @@ void DisplayDebugMessage(const std::string &str)
     {
         WaitForSingleObject(process_info.hProcess, INFINITE);
         CloseHandle(process_info.hThread);
-        CloseHandle(startup_info.hProcess);
+        CloseHandle(process_info.hProcess);
     }
     else
     {

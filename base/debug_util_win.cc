@@ -25,6 +25,7 @@ StackTrace::StackTrace()
 #if defined(OS_WIN)
 StackTrace::StackTrace(_EXCEPTION_POINTERS* exception_pointers)
 {
+    (void)exception_pointers;
 }
 #endif
 
@@ -35,12 +36,14 @@ void StackTrace::PrintBackTrace()
 
 void StackTrace::OutputToStream(std::ostream *os)
 {
+    (void)os;
 }
 
 
 //static 
 bool DebugUtil::SpawnDebuggerOnProcess(unsigned process_id)
 {
+    (void)process_id;
     return false;
 }
 
