@@ -360,7 +360,49 @@ void SetReportHandlerFunction(LogReportHandlerFunction handler)
 // message box.
 void DisplayDebugMessage(const std::string &str)
 {
-    (void)str;
+    if (str.empty())
+    {
+        return;
+    }
+
+#if defined(OS_WIN)
+    // look for the debug dialog program next to our application
+    wchar_t prog_name[MAX_PATH];
+    GetModuleFileNameW(NULL, prog_name, MAX_PATH);
+    wchar_t *backslash = wcsrchr(prog_name, '\\');
+    if (backslash)
+    {
+        backslash[1] = 0;
+    }
+    wcscat_s(prog_name, MAX_PATH, L"debug_message.exe");
+    
+    std::wstring cmdline = base::SysUTF8ToWide(str);
+    if (cmdline.empty())
+    {
+        return;
+    }
+
+    STARTUPINFO startup_info;
+    memset(&startup_info, 0, sizeof(startup_info));
+    startup_info.cb = sizeof(startup_info);
+
+    PROCESS_INFORMATION process_info;
+    if (CreateProcessW(prog_name, &cmdline[0], NULL, NULL,
+                       false, 0, NULL, NULL,
+                       &startup_info, &process_info))
+    {
+        WaitForSingleObject(process_info.hProcess, INFINITE);
+        CloseHandle(process_info.hThread);
+        CloseHandle(startup_info.hProcess);
+    }
+    else
+    {
+        MessageBoxW(NULL, &cmdline[0], L"Fatal Error",
+                    MB_OK | MB_ICONHAND | MB_TOPMOST);
+    }
+#elif defined(OS_POSIX)
+    fprintf(stderr, "%s\n", str.c_str());
+#endif
 }
 
 
