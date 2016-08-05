@@ -5,7 +5,7 @@ if exist build (
     rmdir /q /s base
     rmdir /q /s WIN32
     rmdir /q /s Debug
-    rm -rf _test.dir
+    rmdir /q /s _test.dir
 
     cmake ..
     cmake --build .
