@@ -43,6 +43,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/lock_impl.h"
+#include "base/debug_util.h"
 
 namespace logging
 {
@@ -474,6 +475,52 @@ LogMessage::~LogMessage()
     // TODO
     if (severity_ == LOG_FATAL)
     {
+        // display a message or break into the debugger on a fatal error
+        if (base::DebugUtil::BeingDebugged())
+        {
+            base::DebugUtil::BreakDebugger();
+        }
+        else
+        {
+#if !defined(NDEBUG)
+            // Dump a stack trace on a fatal
+            base::StackTrace trace;
+            stream_ << "\n";
+            trace.OutputToStream(&stream_);
+#endif
+
+            if (log_assert_handler)
+            {
+                // make a copy of the string for the handler out of paranoia
+                log_assert_handler(std::string(stream_.str()));
+            }
+            else
+            {
+                // Don't use the string with the newline, get a fresh version to send to
+                // the debug message process. We also don't display assertions to the
+                // user in release mode. The enduser can't do anything with this
+                // information, and displaying message boxes when the application is
+                // hosed can cause additional problems.
+#if !defined(NDEBUG)
+                DisplayDebugMessage(stream_.str());
+#endif
+
+                // Crash the process to generate a dump.
+                base::DebugUtil::BreakDebugger();
+            }
+        }
+    }
+    else if (severity_ == LOG_ERROR_REPORT)
+    {
+        // We are here only if the user runs with --enable-dcheck in release mode
+        if (log_report_handler)
+        {
+            log_report_handler(std::string(stream_.str()));
+        }
+        else
+        {
+            DisplayDebugMessage(stream_.str());
+        }
     }
 
 }

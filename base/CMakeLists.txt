@@ -5,6 +5,7 @@ include_directories(${COMMON_INCLUDES})
 set(SRC_FILES string_util.cc)
 set(SRC_FILES ${SRC_FILES} string_piece.cc)
 set(SRC_FILES ${SRC_FILES} logging.cc)
+set(SRC_FILES ${SRC_FILES} debug_util.cc)
 
 if (NOT WIN32)
 set(SRC_FILES ${SRC_FILES} string16.cc)

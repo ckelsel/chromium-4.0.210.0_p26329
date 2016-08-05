@@ -24,6 +24,7 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/platform_thread.h"
 
 // This class implements the underlying platform-specific spin-lock mechanism
 // used for the Lock class.  Most users should not use LockImpl directly, but
@@ -69,6 +70,14 @@ public:
 private:
 
     OSLockType os_lock_;
+
+#if !defined(NDEBUG) && defined(OS_WIN)
+    // All private data is implicitly protected by lock_.
+    // Be VERY careful to only access members under that lock.
+    PlatformThreadId owning_thread_id_;
+    int32 recursion_count_shadow_;
+    bool  recursion_used_;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(LockImpl);
 }; // class LockImpl

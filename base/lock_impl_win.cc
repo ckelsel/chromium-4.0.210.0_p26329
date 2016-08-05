@@ -15,9 +15,17 @@
 #include "base/lock_impl.h"
 #include "base/logging.h"
 
+// NOTE: Although windows critical sections support recursive locks, we do not
+// allow this, and we will commonly fire a DCHECK() if a thread attempts to
+// acquire the lock a second time (while already holding it).
+
+
 LockImpl::LockImpl()
 {
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(OS_WIN)
+    recursion_used_ = false;
+    owning_thread_id_ = 0;
+    recursion_count_shadow_ = 0;
 #endif
     ::InitializeCriticalSectionAndSpinCount(&os_lock_, 2000);
 }
@@ -31,6 +39,17 @@ bool LockImpl::Try()
 {
     if (::TryEnterCriticalSection(&os_lock_) != FALSE)
     {
+#if !defined(NDEBUG) && defined(OS_WIN)
+        // ONLY access data after locking.
+        owning_thread_id_ = PlatformThread::CurrentId();
+        DCHECK(owning_thread_id_ != 0);
+        recursion_count_shadow_++;
+        if (2 == recursion_count_shadow_ && !recursion_used_)
+        {
+            recursion_used_ = true;
+            DCHECK(false);
+        }
+#endif
         return true;
     }
 
@@ -40,15 +59,35 @@ bool LockImpl::Try()
 void LockImpl::Lock()
 {
     ::EnterCriticalSection(&os_lock_);
+
+#if !defined(NDEBUG) && defined(OS_WIN)
+        // ONLY access data after locking.
+        owning_thread_id_ = PlatformThread::CurrentId();
+        DCHECK(owning_thread_id_ != 0);
+        recursion_count_shadow_++;
+        if (2 == recursion_count_shadow_ && !recursion_used_)
+        {
+            recursion_used_ = true;
+            DCHECK(false);
+        }
+#endif
 }
 
 void LockImpl::Unlock()
 {
+#if !defined(NDEBUG) && defined(OS_WIN)
+    --recursion_count_shadow_;
+    DCHECK(recursion_count_shadow_ >= 0);
+    owning_thread_id_ = 0;
+#endif
+
     ::LeaveCriticalSection(&os_lock_);
 }
 
 #if !defined(NDEBUG) && defined(OS_WIN)
 void LockImpl::AssertAcquired() const
 {
+    DCHECK(recursion_count_shadow_ > 0);
+    DCHECK(owning_thread_id_ == PlatformThread::CurrentId());
 }
 #endif
