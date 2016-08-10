@@ -6,9 +6,11 @@ else
     BUILD_TYPE=debug
 fi
 
-if [ -d build ]; then
-    cp build_config.h build
-    cd build
+OUT=build
+
+if [ -d $OUT ]; then
+    cp build_config.h $OUT
+    cd $OUT
 
     rm -rf base
     rm _test

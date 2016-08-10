@@ -6,11 +6,12 @@ else
     BUILD_TYPE=debug
 fi
 
-rm -rf build
+OUT=build
+rm -rf $OUT
 
-mkdir build
-cp build_config.h build
-cd build
+mkdir $OUT
+cp build_config.h $OUT
+cd $OUT
 cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
 cmake --build .
 ctest -VV

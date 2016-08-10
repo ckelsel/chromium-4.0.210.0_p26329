@@ -8,7 +8,9 @@ set(SRC_FILES ${SRC_FILES} logging.cc)
 set(SRC_FILES ${SRC_FILES} debug_util.cc)
 
 if (NOT WIN32)
-set(SRC_FILES ${SRC_FILES} string16.cc)
+    set(SRC_FILES ${SRC_FILES} string16.cc)
+else()
+    add_executable(debug_message debug_message.cc)
 endif()
 
 if(NOT WIN32)
