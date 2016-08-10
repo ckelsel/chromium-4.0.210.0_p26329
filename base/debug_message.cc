@@ -22,6 +22,11 @@
 // show the command line directly as the message.
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine, int nCmdShow) {
+    UNREFERENCED_PARAMETER(hInstance);
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(nCmdShow);
+
     LPWSTR cmdline = GetCommandLineW();
     MessageBox(NULL, cmdline, L"Kr\x00d8m", MB_TOPMOST);
     return 0;
