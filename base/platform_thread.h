@@ -19,17 +19,21 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-typedef DWORD PlatformThreadId;
-typedef HANDLE PlatformThreadHandle;
 #elif defined(OS_POSIX)
 #include <pthread.h>
 #include <unistd.h>
-typedef pid_t PlatformThreadId;
-typedef pthread_t PlatformThreadHandle;
 #endif
 
 namespace base
 {
+
+#if defined(OS_WIN)
+typedef DWORD PlatformThreadId;
+typedef HANDLE PlatformThreadHandle;
+#elif defined(OS_POSIX)
+typedef pid_t PlatformThreadId;
+typedef pthread_t PlatformThreadHandle;
+#endif
 
 class PlatformThread
 {

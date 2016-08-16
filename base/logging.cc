@@ -515,7 +515,6 @@ LogMessage::~LogMessage()
         }
     }
 
-    // TODO
     if (severity_ == LOG_FATAL)
     {
         // display a message or break into the debugger on a fatal error
