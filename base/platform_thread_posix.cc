@@ -22,6 +22,14 @@
 namespace base
 {
 
+static void* ThreadFunc(void *closure)
+{
+    PlatformThread::Delegate *delegate = 
+        static_cast<PlatformThread::Delegate*>(closure);
+    delegate->ThreadMain();
+    return NULL;
+}
+
 //static 
 PlatformThreadId PlatformThread::CurrentId()
 {
@@ -61,6 +69,51 @@ void PlatformThread::SetName(const char *name)
     // consolation prize.)
 }
 
+bool CreateThread(size_t stack_size, bool joinable,
+                  PlatformThread::Delegate *delegate,
+                  PlatformThreadHandle *thread_handle)
+{
+    bool success = false;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
 
+    // Pthreads are joinable by default, so only specify the detached attribute if
+    // the thread should be non-joinable.
+    if (!joinable)
+    {
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    }
+
+    if (stack_size > 0)
+    {
+        pthread_attr_setstacksize(&attr, stack_size);
+    }
+
+    success = !pthread_create(thread_handle, &attr, ThreadFunc, delegate);
+
+    pthread_attr_destroy(&attr);
+    return success;
+}
+
+//static 
+bool PlatformThread::Create(size_t stack_size, Delegate *delegate,
+                            PlatformThreadHandle *thread_handle)
+{
+    return CreateThread(stack_size, true, delegate, thread_handle);
+}
+
+//static 
+bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate *delegate)
+{
+    PlatformThreadHandle unused;
+
+    return CreateThread(stack_size, false, delegate, &unused);
+}
+
+//static 
+void PlatformThread::Join(PlatformThreadHandle thread_handle)
+{
+    pthread_join(thread_handle, NULL);
+}
 
 }
