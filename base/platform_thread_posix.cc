@@ -1,105 +1,120 @@
-/* Copyright 2016 kunming.xie
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <sys/syscall.h>
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/platform_thread.h"
+
 #include <errno.h>
 #include <sched.h>
 
-#include "base/platform_thread.h"
-#include "base/logging.h"
+#if defined(OS_MACOSX)
+#include <mach/mach.h>
+#elif defined(OS_LINUX)
+#include <sys/syscall.h>
+#include <unistd.h>
+#endif
 
+#if defined(OS_MACOSX)
+namespace base {
+void InitThreading();
+}  // namespace
+#endif
 
-static void *ThreadFunc(void *closure) {
-    PlatformThread::Delegate *delegate =
-            static_cast<PlatformThread::Delegate *>(closure);
-    delegate->ThreadMain();
-    return NULL;
+static void* ThreadFunc(void* closure) {
+  PlatformThread::Delegate* delegate =
+      static_cast<PlatformThread::Delegate*>(closure);
+  delegate->ThreadMain();
+  return NULL;
 }
 
-//static 
+// static
 PlatformThreadId PlatformThread::CurrentId() {
-    return syscall(__NR_gettid);
+  // Pthreads doesn't have the concept of a thread ID, so we have to reach down
+  // into the kernel.
+#if defined(OS_MACOSX)
+  return mach_thread_self();
+#elif defined(OS_LINUX)
+  return syscall(__NR_gettid);
+#endif
 }
 
-//static 
+// static
 void PlatformThread::YieldCurrentThread() {
-    sched_yield();
+  sched_yield();
 }
 
-//static 
+// static
 void PlatformThread::Sleep(int duration_ms) {
-    struct timespec sleep_time, remaining;
+  struct timespec sleep_time, remaining;
 
-    // Contains the portion of duration_ms >= 1 sec.
-    sleep_time.tv_sec = duration_ms / 1000;
-    duration_ms -= sleep_time.tv_sec * 1000;
+  // Contains the portion of duration_ms >= 1 sec.
+  sleep_time.tv_sec = duration_ms / 1000;
+  duration_ms -= sleep_time.tv_sec * 1000;
 
-    // Contains the portion of duration_ms < 1 sec.
-    sleep_time.tv_nsec = duration_ms * 1000 * 1000;  // nanoseconds.
+  // Contains the portion of duration_ms < 1 sec.
+  sleep_time.tv_nsec = duration_ms * 1000 * 1000;  // nanoseconds.
 
-    while (nanosleep(&sleep_time, &remaining) == -1 && errno == EINTR) {
-        sleep_time = remaining;
-    }
+  while (nanosleep(&sleep_time, &remaining) == -1 && errno == EINTR)
+    sleep_time = remaining;
 }
 
-//static 
-void PlatformThread::SetName(const char *name) {
-    // The POSIX standard does not provide for naming threads, and neither Linux
-    // nor Mac OS X (our two POSIX targets) provide any non-portable way of doing
-    // it either. (Some BSDs provide pthread_set_name_np but that isn't much of a
-    // consolation prize.)
+// static
+void PlatformThread::SetName(const char* name) {
+  // The POSIX standard does not provide for naming threads, and neither Linux
+  // nor Mac OS X (our two POSIX targets) provide any non-portable way of doing
+  // it either. (Some BSDs provide pthread_set_name_np but that isn't much of a
+  // consolation prize.)
+  // TODO(darin): decide whether stuffing the name in TLS or other in-memory
+  // structure would be useful for debugging or not.
 }
+
+namespace {
 
 bool CreateThread(size_t stack_size, bool joinable,
-                  PlatformThread::Delegate *delegate,
-                  PlatformThreadHandle *thread_handle) {
-    bool success = false;
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
+                  PlatformThread::Delegate* delegate,
+                  PlatformThreadHandle* thread_handle) {
+#if defined(OS_MACOSX)
+  base::InitThreading();
+#endif  // OS_MACOSX
 
-    // Pthreads are joinable by default, so only specify the detached attribute if
-    // the thread should be non-joinable.
-    if (!joinable) {
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    }
+  bool success = false;
+  pthread_attr_t attributes;
+  pthread_attr_init(&attributes);
 
-    if (stack_size > 0) {
-        pthread_attr_setstacksize(&attr, stack_size);
-    }
+  // Pthreads are joinable by default, so only specify the detached attribute if
+  // the thread should be non-joinable.
+  if (!joinable) {
+    pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);
+  }
 
-    success = !pthread_create(thread_handle, &attr, ThreadFunc, delegate);
+  if (stack_size > 0)
+    pthread_attr_setstacksize(&attributes, stack_size);
 
-    pthread_attr_destroy(&attr);
-    return success;
+  success = !pthread_create(thread_handle, &attributes, ThreadFunc, delegate);
+
+  pthread_attr_destroy(&attributes);
+  return success;
 }
 
-//static 
-bool PlatformThread::Create(size_t stack_size, Delegate *delegate,
-                            PlatformThreadHandle *thread_handle) {
-    return CreateThread(stack_size, true, delegate, thread_handle);
+}  // anonymous namespace
+
+// static
+bool PlatformThread::Create(size_t stack_size, Delegate* delegate,
+                            PlatformThreadHandle* thread_handle) {
+  return CreateThread(stack_size, true /* joinable thread */,
+                      delegate, thread_handle);
 }
 
-//static 
-bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate *delegate) {
-    PlatformThreadHandle unused;
+// static
+bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
+  PlatformThreadHandle unused;
 
-    return CreateThread(stack_size, false, delegate, &unused);
+  bool result = CreateThread(stack_size, false /* non-joinable thread */,
+                             delegate, &unused);
+  return result;
 }
 
-//static 
+// static
 void PlatformThread::Join(PlatformThreadHandle thread_handle) {
-    pthread_join(thread_handle, NULL);
+  pthread_join(thread_handle, NULL);
 }
-
-

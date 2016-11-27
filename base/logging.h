@@ -1,17 +1,7 @@
-/* Copyright 2016 kunming.xie
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef BASE_LOGGING_H_
 #define BASE_LOGGING_H_
 
@@ -99,20 +89,15 @@
 // There is also the special severity of DFATAL, which logs FATAL in
 // debug mode, ERROR_REPORT in normal mode.
 
-
-namespace logging 
-{
+namespace logging {
 
 // Where to record logging output? A flat file and/or system debug log via
 // OutputDebugString. Defaults on Windows to LOG_ONLY_TO_FILE, and on
 // POSIX to LOG_ONLY_TO_SYSTEM_DEBUG_LOG (aka stderr).
-enum LoggingDestination 
-{
-    LOG_NONE,
-    LOG_ONLY_TO_FILE,
-    LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-    LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
-};
+enum LoggingDestination { LOG_NONE,
+                          LOG_ONLY_TO_FILE,
+                          LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
+                          LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG };
 
 // Indicates that the log file should be locked when being written to.
 // Often, there is no locking, which is fine for a single threaded program.
@@ -122,19 +107,11 @@ enum LoggingDestination
 //
 // All processes writing to the log file must have their locking set for it to
 // work properly. Defaults to DONT_LOCK_LOG_FILE.
-enum LogLockingState
-{
-    LOCK_LOG_FILE,
-    DONT_LOCK_LOG_FILE,
-};
+enum LogLockingState { LOCK_LOG_FILE, DONT_LOCK_LOG_FILE };
 
 // On startup, should we delete or append to an existing log file (if any)?
 // Defaults to APPEND_TO_OLD_LOG_FILE.
-enum OldFileDeletionState
-{
-    DELETE_OLD_LOG_FILE,
-    APPEND_TO_OLD_LOG_FILE,
-};
+enum OldFileDeletionState { DELETE_OLD_LOG_FILE, APPEND_TO_OLD_LOG_FILE };
 
 // Sets the log file name and other global logging state. Calling this function
 // is recommended, and is normally done at the beginning of application init.
@@ -147,10 +124,11 @@ enum OldFileDeletionState
 // directory. You probably don't want this, especially since the program
 // directory may not be writable on an enduser's system.
 #if defined(OS_WIN)
-void InitLogging(const wchar_t *new_log_file, LoggingDestination logging_dest,
+void InitLogging(const wchar_t* log_file, LoggingDestination logging_dest,
                  LogLockingState lock_log, OldFileDeletionState delete_old);
 #elif defined(OS_POSIX)
-void InitLogging(const char *new_log_file, LoggingDestination logging_dest,
+// TODO(avi): do we want to do a unification of character types here?
+void InitLogging(const char* log_file, LoggingDestination logging_dest,
                  LogLockingState lock_log, OldFileDeletionState delete_old);
 #endif
 
@@ -158,17 +136,23 @@ void InitLogging(const char *new_log_file, LoggingDestination logging_dest,
 // log file/displayed to the user (if applicable). Anything below this level
 // will be silently ignored. The log level defaults to 0 (everything is logged)
 // if this function is not called.
-void SetLogMinLevel(int32 level);
+void SetMinLogLevel(int level);
 
-// Gets the current log level
-int32 GetLogMinLevel();
+// Gets the current log level.
+int GetMinLogLevel();
 
+#if defined(OS_LINUX)
+// Get the file descriptor used for logging.
+// Returns -1 if none open.
+// Needed by ZygoteManager.
+int GetLoggingFileDescriptor();
+#endif
 
 // Sets the log filter prefix.  Any log message below LOG_ERROR severity that
 // doesn't start with this prefix with be silently ignored.  The filter defaults
 // to NULL (everything is logged) if this function is not called.  Messages
 // with severity of LOG_ERROR or higher will not be filtered.
-void SetLogFilterPrefix(const char *filter);
+void SetLogFilterPrefix(const char* filter);
 
 // Sets the common items you want to be prepended to each log message.
 // process and thread IDs default to off, the timestamp defaults to on.
@@ -181,26 +165,25 @@ void SetLogItems(bool enable_process_id, bool enable_thread_id,
 // The default handler shows a dialog box and then terminate the process,
 // however clients can use this function to override with their own handling
 // (e.g. a silent one for Unit Tests)
-typedef void (*LogAssertHandlerFunction)(const std::string &str);
+typedef void (*LogAssertHandlerFunction)(const std::string& str);
 void SetLogAssertHandler(LogAssertHandlerFunction handler);
-
 // Sets the Log Report Handler that will be used to notify of check failures
-// // in non-debug mode. The default handler shows a dialog box and continues
+// in non-debug mode. The default handler shows a dialog box and continues
 // the execution, however clients can use this function to override with their
 // own handling.
-typedef void (*LogReportHandlerFunction)(const std::string &str);
-void SetReportHandlerFunction(LogReportHandlerFunction handler);
+typedef void (*LogReportHandlerFunction)(const std::string& str);
+void SetLogReportHandler(LogReportHandlerFunction handler);
 
-typedef int32 LogSeverity;
+typedef int LogSeverity;
 const LogSeverity LOG_INFO = 0;
 const LogSeverity LOG_WARNING = 1;
 const LogSeverity LOG_ERROR = 2;
 const LogSeverity LOG_ERROR_REPORT = 3;
 const LogSeverity LOG_FATAL = 4;
-const LogSeverity LOG_NUM_SEVERITY = 5;
+const LogSeverity LOG_NUM_SEVERITIES = 5;
 
 // LOG_DFATAL_LEVEL is LOG_FATAL in debug mode, ERROR_REPORT in normal mode
-#if defined(NDEBUG)
+#ifdef NDEBUG
 const LogSeverity LOG_DFATAL_LEVEL = LOG_ERROR_REPORT;
 #else
 const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
@@ -210,17 +193,17 @@ const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
 // by LOG() and LOG_IF, etc. Since these are used all over our code, it's
 // better to have compact code for these operations.
 #define COMPACT_GOOGLE_LOG_INFO \
-    logging::LogMessage(__FILE__, __LINE__)
+  logging::LogMessage(__FILE__, __LINE__)
 #define COMPACT_GOOGLE_LOG_WARNING \
-    logging::LogMessage(__FILE__, __LINE__, logging::LOG_WARNING)
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_WARNING)
 #define COMPACT_GOOGLE_LOG_ERROR \
-    logging::LogMessage(__FILE__, __LINE__, logging::LOG_ERROR)
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_ERROR)
 #define COMPACT_GOOGLE_LOG_ERROR_REPORT \
-    logging::LogMessage(__FILE__, __LINE__, logging::LOG_ERROR_REPORT)
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_ERROR_REPORT)
 #define COMPACT_GOOGLE_LOG_FATAL \
-    logging::LogMessage(__FILE__, __LINE__, logging::LOG_FATAL)
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_FATAL)
 #define COMPACT_GOOGLE_LOG_DFATAL \
-    logging::LogMessage(__FILE__, __LINE__, logging::LOG_DFATAL_LEVEL)
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_DFATAL_LEVEL)
 
 // wingdi.h defines ERROR to be 0. When we call LOG(ERROR), it gets
 // substituted with 0, and it expands to COMPACT_GOOGLE_LOG_0. To allow us
@@ -229,7 +212,7 @@ const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
 // the Windows SDK does for consistency.
 #define ERROR 0
 #define COMPACT_GOOGLE_LOG_0 \
-    logging::LogMessage(__FILE__, __LINE__, logging::LOG_ERROR)
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_ERROR)
 
 // We use the preprocessor's merging operator, "##", so that, e.g.,
 // LOG(INFO) becomes the token COMPACT_GOOGLE_LOG_INFO.  There's some funny
@@ -239,55 +222,54 @@ const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
 // impossible to stream something like a string directly to an unnamed
 // ostream. We employ a neat hack by calling the stream() member
 // function of LogMessage which seems to avoid the problem.
+
 #define LOG(severity) COMPACT_GOOGLE_LOG_ ## severity.stream()
 #define SYSLOG(severity) LOG(severity)
 
 #define LOG_IF(severity, condition) \
-    !(condition) ? (void) 0 : logging::LogMessageVoidify() & LOG(severity) 
+  !(condition) ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
 #define SYSLOG_IF(severity, condition) LOG_IF(severity, condition)
 
-#define LOG_ASSERT(condition) \
-    LOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
+#define LOG_ASSERT(condition)  \
+  LOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
 #define SYSLOG_ASSERT(condition) \
-    SYSLOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
+  SYSLOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
 
 // CHECK dies with a fatal error if condition is not true.  It is *not*
 // controlled by NDEBUG, so the check will be executed regardless of
 // compilation mode.
 #define CHECK(condition) \
-    LOG_IF(FATAL, !(condition)) << "Check failed: " #condition ". "
-
+  LOG_IF(FATAL, !(condition)) << "Check failed: " #condition ". "
 
 // A container for a string pointer which can be evaluated to a bool -
 // true iff the pointer is NULL.
-    struct CheckOpString {
-        CheckOpString(std::string* str) : str_(str) { }
-        // No destructor: if str_ is non-NULL, we're about to LOG(FATAL),
-        // so there's no point in cleaning up str_.
-        operator bool() const { return str_ != NULL; }
-        std::string* str_;
-    };
+struct CheckOpString {
+  CheckOpString(std::string* str) : str_(str) { }
+  // No destructor: if str_ is non-NULL, we're about to LOG(FATAL),
+  // so there's no point in cleaning up str_.
+  operator bool() const { return str_ != NULL; }
+  std::string* str_;
+};
 
 // Build the error message string.  This is separate from the "Impl"
 // function template because it is not performance critical and so can
 // be out of line, while the "Impl" code should be inline.
-    template<class t1, class t2>
-    std::string* MakeCheckOpString(const t1& v1, const t2& v2, const char* names) {
-        std::ostringstream ss;
-        ss << names << " (" << v1 << " vs. " << v2 << ")";
-        std::string* msg = new std::string(ss.str());
-        return msg;
-    }
+template<class t1, class t2>
+std::string* MakeCheckOpString(const t1& v1, const t2& v2, const char* names) {
+  std::ostringstream ss;
+  ss << names << " (" << v1 << " vs. " << v2 << ")";
+  std::string* msg = new std::string(ss.str());
+  return msg;
+}
 
-    extern std::string* MakeCheckOpStringIntInt(int v1, int v2, const char* names);
+extern std::string* MakeCheckOpStringIntInt(int v1, int v2, const char* names);
 
-    template<int, int>
-    std::string* MakeCheckOpString(const int& v1,
-                                   const int& v2,
-                                   const char* names) {
-        return MakeCheckOpStringIntInt(v1, v2, names);
-    }
-
+template<int, int>
+std::string* MakeCheckOpString(const int& v1,
+                               const int& v2,
+                               const char* names) {
+  return MakeCheckOpStringIntInt(v1, v2, names);
+}
 
 // Plus some debug-logging macros that get compiled to nothing for production
 //
@@ -303,14 +285,14 @@ const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
 // defined.
 #if ( defined(OS_WIN) && defined(OFFICIAL_BUILD)) || \
     (!defined(OS_WIN) && defined(NDEBUG) && defined(GOOGLE_CHROME_BUILD))
-    // In order to have optimized code for official builds, remove DLOGs and
+// In order to have optimized code for official builds, remove DLOGs and
 // DCHECKs.
 #define OMIT_DLOG_AND_DCHECK 1
 #endif
 
 #ifdef OMIT_DLOG_AND_DCHECK
 
-    #define DLOG(severity) \
+#define DLOG(severity) \
   true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
 
 #define DLOG_IF(severity, condition) \
@@ -373,7 +355,7 @@ enum { DEBUG_MODE = 0 };
 #define DLOG_ASSERT(condition) LOG_ASSERT(condition)
 
 // debug-only checking.  not executed in NDEBUG mode.
-    enum { DEBUG_MODE = 1 };
+enum { DEBUG_MODE = 1 };
 #define DCHECK(condition) \
   LOG_IF(FATAL, !(condition)) << "Check failed: " #condition ". "
 
@@ -390,10 +372,10 @@ enum { DEBUG_MODE = 0 };
   std::string* Check##func##expected##Impl(const char* s1, \
                                            const char* s2, \
                                            const char* names);
-    DECLARE_DCHECK_STROP_IMPL(strcmp, true)
-    DECLARE_DCHECK_STROP_IMPL(strcmp, false)
-    DECLARE_DCHECK_STROP_IMPL(_stricmp, true)
-    DECLARE_DCHECK_STROP_IMPL(_stricmp, false)
+DECLARE_DCHECK_STROP_IMPL(strcmp, true)
+DECLARE_DCHECK_STROP_IMPL(strcmp, false)
+DECLARE_DCHECK_STROP_IMPL(_stricmp, true)
+DECLARE_DCHECK_STROP_IMPL(_stricmp, false)
 #undef DECLARE_DCHECK_STROP_IMPL
 
 // Helper macro for string comparisons.
@@ -420,7 +402,7 @@ enum { DEBUG_MODE = 0 };
 #define DCHECK_BOUND(B,A) DCHECK(B <= (sizeof(A)/sizeof(A[0])))
 
 #else  // NDEBUG
-    // On a regular release build we want to be able to enable DCHECKS through the
+// On a regular release build we want to be able to enable DCHECKS through the
 // command line.
 #define DLOG(severity) \
   true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
@@ -484,12 +466,12 @@ extern bool g_enable_dcheck;
     if (v1 op v2) return NULL; \
     else return MakeCheckOpString(v1, v2, names); \
   }
-    DEFINE_DCHECK_OP_IMPL(EQ, ==)
-    DEFINE_DCHECK_OP_IMPL(NE, !=)
-    DEFINE_DCHECK_OP_IMPL(LE, <=)
-    DEFINE_DCHECK_OP_IMPL(LT, < )
-    DEFINE_DCHECK_OP_IMPL(GE, >=)
-    DEFINE_DCHECK_OP_IMPL(GT, > )
+DEFINE_DCHECK_OP_IMPL(EQ, ==)
+DEFINE_DCHECK_OP_IMPL(NE, !=)
+DEFINE_DCHECK_OP_IMPL(LE, <=)
+DEFINE_DCHECK_OP_IMPL(LT, < )
+DEFINE_DCHECK_OP_IMPL(GE, >=)
+DEFINE_DCHECK_OP_IMPL(GT, > )
 #undef DEFINE_DCHECK_OP_IMPL
 
 // Equality/Inequality checks - compare two values, and log a LOG_FATAL message
@@ -520,91 +502,160 @@ extern bool g_enable_dcheck;
 #endif  // OMIT_DLOG_AND_DCHECK
 #undef OMIT_DLOG_AND_DCHECK
 
-
 #define NOTREACHED() DCHECK(false)
 
+// Redefine the standard assert to use our nice log files
+#undef assert
+#define assert(x) DLOG_ASSERT(x)
 
 // This class more or less represents a particular log message.  You
-// // create an instance of LogMessage and then stream stuff to it.
+// create an instance of LogMessage and then stream stuff to it.
 // When you finish streaming to it, ~LogMessage is called and the
 // full message gets streamed to the appropriate destination.
 //
 // You shouldn't actually use LogMessage's constructor to log things,
 // though.  You should use the LOG() macro (and variants thereof)
 // above.
-class LogMessage
-{
+class LogMessage {
+ public:
+  LogMessage(const char* file, int line, LogSeverity severity, int ctr);
 
-public:
+  // Two special constructors that generate reduced amounts of code at
+  // LOG call sites for common cases.
+  //
+  // Used for LOG(INFO): Implied are:
+  // severity = LOG_INFO, ctr = 0
+  //
+  // Using this constructor instead of the more complex constructor above
+  // saves a couple of bytes per call site.
+  LogMessage(const char* file, int line);
 
-    LogMessage(const char *file, int32 line, LogSeverity severity, int32 ctr);
+  // Used for LOG(severity) where severity != INFO.  Implied
+  // are: ctr = 0
+  //
+  // Using this constructor instead of the more complex constructor above
+  // saves a couple of bytes per call site.
+  LogMessage(const char* file, int line, LogSeverity severity);
 
-    // Two special constructors that generate reduced amounts of code at
-    // LOG call sites for common cases.
-    //
-    // Used for LOG(INFO): Implied are:
-    // severity = LOG_INFO, ctr = 0
-    //
-    // Using this constructor instead of the more complex constructor above
-    // saves a couple of bytes per call site.
-    LogMessage(const char *file, int32 line);
+  // A special constructor used for check failures.
+  // Implied severity = LOG_FATAL
+  LogMessage(const char* file, int line, const CheckOpString& result);
 
+  // A special constructor used for check failures, with the option to
+  // specify severity.
+  LogMessage(const char* file, int line, LogSeverity severity,
+             const CheckOpString& result);
 
-      // Used for LOG(severity) where severity != INFO.  Implied
-      // are: ctr = 0
-      //
-      // Using this constructor instead of the more complex constructor above
-      // saves a couple of bytes per call site.
-    LogMessage(const char *file, int32 line, LogSeverity severity);
-    
-    ~LogMessage();
+  ~LogMessage();
 
-    std::ostream &stream() { return stream_; }
+  std::ostream& stream() { return stream_; }
 
-private:
-    
-    void Init(const char *file, int32 line);
+ private:
+  void Init(const char* file, int line);
 
-    LogSeverity severity_;
-    std::ostringstream stream_;
-    size_t message_start_;
-
+  LogSeverity severity_;
+  std::ostringstream stream_;
+  size_t message_start_;  // Offset of the start of the message (past prefix
+                          // info).
 #if defined(OS_WIN)
-      // Stores the current value of GetLastError in the constructor and restores
-      // it in the destructor by calling SetLastError.
-      // This is useful since the LogMessage class uses a lot of Win32 calls
-      // that will lose the value of GLE and the code that called the log function
-      // will have lost the thread error value when the log call returns.
-    class SaveLastError
-    {
-    public:
-        SaveLastError();
+  // Stores the current value of GetLastError in the constructor and restores
+  // it in the destructor by calling SetLastError.
+  // This is useful since the LogMessage class uses a lot of Win32 calls
+  // that will lose the value of GLE and the code that called the log function
+  // will have lost the thread error value when the log call returns.
+  class SaveLastError {
+   public:
+    SaveLastError();
+    ~SaveLastError();
 
-        ~SaveLastError();
+    unsigned long get_error() const { return last_error_; }
 
-    private:
-        uint32 error_;
-    };
+   protected:
+    unsigned long last_error_;
+  };
 
-    SaveLastError last_error_;
+  SaveLastError last_error_;
 #endif
 
-    DISALLOW_COPY_AND_ASSIGN(LogMessage);
-}; // class LogMessage
+  DISALLOW_COPY_AND_ASSIGN(LogMessage);
+};
+
+// A non-macro interface to the log facility; (useful
+// when the logging level is not a compile-time constant).
+inline void LogAtLevel(int const log_level, std::string const &msg) {
+  LogMessage(__FILE__, __LINE__, log_level).stream() << msg;
+}
 
 // This class is used to explicitly ignore values in the conditional
 // logging macros.  This avoids compiler warnings like "value computed
 // is not used" and "statement has no effect".
-class LogMessageVoidify
-{
-public:
-
-    LogMessageVoidify() { }
-
-    void operator&(std::ostream&) { }
+class LogMessageVoidify {
+ public:
+  LogMessageVoidify() { }
+  // This has to be an operator with a precedence lower than << but
+  // higher than ?:
+  void operator&(std::ostream&) { }
 };
 
-} // namespace logging 
+// Closes the log file explicitly if open.
+// NOTE: Since the log file is opened as necessary by the action of logging
+//       statements, there's no guarantee that it will stay closed
+//       after this call.
+void CloseLogFile();
 
+}  // namespace logging
 
-#endif // BASE_LOGGING_H_
+// These functions are provided as a convenience for logging, which is where we
+// use streams (it is against Google style to use streams in other places). It
+// is designed to allow you to emit non-ASCII Unicode strings to the log file,
+// which is normally ASCII. It is relatively slow, so try not to use it for
+// common cases. Non-ASCII characters will be converted to UTF-8 by these
+// operators.
+std::ostream& operator<<(std::ostream& out, const wchar_t* wstr);
+inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
+  return out << wstr.c_str();
+}
+
+// The NOTIMPLEMENTED() macro annotates codepaths which have
+// not been implemented yet.
+//
+// The implementation of this macro is controlled by NOTIMPLEMENTED_POLICY:
+//   0 -- Do nothing (stripped by compiler)
+//   1 -- Warn at compile time
+//   2 -- Fail at compile time
+//   3 -- Fail at runtime (DCHECK)
+//   4 -- [default] LOG(ERROR) at runtime
+//   5 -- LOG(ERROR) at runtime, only once per call-site
+
+#ifndef NOTIMPLEMENTED_POLICY
+// Select default policy: LOG(ERROR)
+#define NOTIMPLEMENTED_POLICY 4
+#endif
+
+#if defined(COMPILER_GCC)
+// On Linux, with GCC, we can use __PRETTY_FUNCTION__ to get the demangled name
+// of the current function in the NOTIMPLEMENTED message.
+#define NOTIMPLEMENTED_MSG "Not implemented reached in " << __PRETTY_FUNCTION__
+#else
+#define NOTIMPLEMENTED_MSG "NOT IMPLEMENTED"
+#endif
+
+#if NOTIMPLEMENTED_POLICY == 0
+#define NOTIMPLEMENTED() ;
+#elif NOTIMPLEMENTED_POLICY == 1
+// TODO, figure out how to generate a warning
+#define NOTIMPLEMENTED() COMPILE_ASSERT(false, NOT_IMPLEMENTED)
+#elif NOTIMPLEMENTED_POLICY == 2
+#define NOTIMPLEMENTED() COMPILE_ASSERT(false, NOT_IMPLEMENTED)
+#elif NOTIMPLEMENTED_POLICY == 3
+#define NOTIMPLEMENTED() NOTREACHED()
+#elif NOTIMPLEMENTED_POLICY == 4
+#define NOTIMPLEMENTED() LOG(ERROR) << NOTIMPLEMENTED_MSG
+#elif NOTIMPLEMENTED_POLICY == 5
+#define NOTIMPLEMENTED() do {\
+  static int count = 0;\
+  LOG_IF(ERROR, 0 == count++) << NOTIMPLEMENTED_MSG;\
+} while(0)
+#endif
+
+#endif  // BASE_LOGGING_H_

@@ -1,26 +1,14 @@
-/* Copyright 2016 kunming.xie
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef BASE_LOCK_IMPL_H_
 #define BASE_LOCK_IMPL_H_
 
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-
 #include <windows.h>
-
 #elif defined(OS_POSIX)
 #include <pthread.h>
 #endif
@@ -32,57 +20,58 @@
 // used for the Lock class.  Most users should not use LockImpl directly, but
 // should instead use Lock.
 class LockImpl {
-
-public:
-
+ public:
 #if defined(OS_WIN)
-    typedef CRITICAL_SECTION OSLockType;
+  typedef CRITICAL_SECTION OSLockType;
 #elif defined(OS_POSIX)
-    typedef pthread_mutex_t OSLockType;
+  typedef pthread_mutex_t OSLockType;
 #endif
 
-    LockImpl();
+  LockImpl();
+  ~LockImpl();
 
-    ~LockImpl();
+  // If the lock is not held, take it and return true.  If the lock is already
+  // held by something else, immediately return false.
+  bool Try();
 
-    // If the lock is not held, take it and return true.  If the lock is already
-    // held by something else, immediately return false
-    bool Try();
+  // Take the lock, blocking until it is available if necessary.
+  void Lock();
 
-    // Take the lock, blocking until it is available if necessary.
-    void Lock();
+  // Release the lock.  This must only be called by the lock's holder: after
+  // a successful call to Try, or a call to Lock.
+  void Unlock();
 
-    // Release the lock.  This must only be called by the lock's holder: after
-    // a successful call to Try, or a call to Lock.
-    void Unlock();
-
-
-    // Debug-only method that will DCHECK() if the lock is not acquired by the
-    // current thread.  In non-debug builds, no check is performed.
-    // Because linux and mac condition variables modify the underlyning lock
-    // through the os_lock() method, runtime assertions can not be done on those
-    // builds.
+  // Debug-only method that will DCHECK() if the lock is not acquired by the
+  // current thread.  In non-debug builds, no check is performed.
+  // Because linux and mac condition variables modify the underlyning lock
+  // through the os_lock() method, runtime assertions can not be done on those
+  // builds.
 #if defined(NDEBUG) || !defined(OS_WIN)
-    void AssertAcquired() const { }
+  void AssertAcquired() const {}
 #else
-
-    void AssertAcquired() const;
-
+  void AssertAcquired() const;
 #endif
 
-private:
+  // Return the native underlying lock.  Not supported for Windows builds.
+  // TODO(awalker): refactor lock and condition variables so that this is
+  // unnecessary.
+#if !defined(OS_WIN)
+  OSLockType* os_lock() { return &os_lock_; }
+#endif
 
-    OSLockType os_lock_;
+ private:
+  OSLockType os_lock_;
 
 #if !defined(NDEBUG) && defined(OS_WIN)
-    // All private data is implicitly protected by lock_.
-    // Be VERY careful to only access members under that lock.
-    PlatformThreadId owning_thread_id_;
-    int32 recursion_count_shadow_;
-    bool recursion_used_;
-#endif
+  // All private data is implicitly protected by lock_.
+  // Be VERY careful to only access members under that lock.
+  PlatformThreadId owning_thread_id_;
+  int32 recursion_count_shadow_;
+  bool recursion_used_;      // Allow debugging to continued after a DCHECK().
+#endif  // NDEBUG
 
-    DISALLOW_COPY_AND_ASSIGN(LockImpl);
-}; // class LockImpl
+  DISALLOW_COPY_AND_ASSIGN(LockImpl);
+};
 
-#endif // BASE_LOCK_IMPL_H_
+
+#endif  // BASE_LOCK_IMPL_H_

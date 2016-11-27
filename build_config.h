@@ -96,4 +96,6 @@
 #error Please add support for your compiler in build/build_config.h
 #endif
 
+#define GTEST_H "ext/gtest/googletest/googletest/include/gtest/gtest.h"
+#define GTEST_PROD_H "ext/gtest/googletest/googletest/include/gtest/gtest_prod.h"
 #endif  // BUILD_BUILD_CONFIG_H_
