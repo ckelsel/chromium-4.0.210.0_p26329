@@ -18,135 +18,116 @@
 #include "base/logging.h"
 #include "string_util.h"
 
-namespace base
-{
+namespace base {
 
 // static 
-int32 SysInfo::NumberOfProcessors()
-{
-    SYSTEM_INFO info;
-    GetSystemInfo(&info);
-    return static_cast<int32>(info.dwNumberOfProcessors);
-}
-
-// static 
-int64 SysInfo::AmountOfPhysicalMemory()
-{
-    MEMORYSTATUSEX info;
-    info.dwLength = sizeof(info);
-    if (!GlobalMemoryStatusEx(&info))
-    {
-        NOTREACHED();
-        return 0;
+    int32 SysInfo::NumberOfProcessors() {
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        return static_cast<int32>(info.dwNumberOfProcessors);
     }
 
-    int64 ret = static_cast<int64>(info.ullTotalPhys);
-    if (ret < 0)
-    {
-        ret = kint64max;
+// static 
+    int64 SysInfo::AmountOfPhysicalMemory() {
+        MEMORYSTATUSEX info;
+        info.dwLength = sizeof(info);
+        if (!GlobalMemoryStatusEx(&info)) {
+            NOTREACHED();
+            return 0;
+        }
+
+        int64 ret = static_cast<int64>(info.ullTotalPhys);
+        if (ret < 0) {
+            ret = kint64max;
+        }
+
+        return ret;
     }
 
-    return ret;
-}
-
 
 // static 
-int64 SysInfo::AmountOfFreeDiskSpace(const std::wstring &path)
-{
-    ULARGE_INTEGER available, total, free;
-    if (!GetDiskFreeSpaceExW(path.c_str(), &available, &total, &free))
-    {
-        return -1;
+    int64 SysInfo::AmountOfFreeDiskSpace(const std::wstring &path) {
+        ULARGE_INTEGER available, total, free;
+        if (!GetDiskFreeSpaceExW(path.c_str(), &available, &total, &free)) {
+            return -1;
+        }
+
+        int64 ret = static_cast<int64>(available.QuadPart);
+        if (ret < 0) {
+            ret = kint64max;
+        }
+
+        return ret;
     }
 
-    int64 ret = static_cast<int64>(available.QuadPart);
-    if (ret < 0)
-    {
-        ret = kint64max;
+// static 
+    bool SysInfo::HasEnvVar(const wchar_t *var) {
+        return GetEnvironmentVariableW(var, NULL, 0) != 0;
     }
 
-    return ret;
-}
-
 // static 
-bool SysInfo::HasEnvVar(const wchar_t *var)
-{
-    return GetEnvironmentVariableW(var, NULL, 0) != 0;
-}
+    std::wstring SysInfo::GetEnvVar(const wchar_t *var) {
 
-// static 
-std::wstring SysInfo::GetEnvVar(const wchar_t *var)
-{
-
-    (void *)var;
-    //TODO
-    return L"";
-}
-
-// static 
-std::string SysInfo::OperatingSystemName()
-{
-    return "Windows NT";
-}
-
-// static 
-std::string SysInfo::OperatingSystemVersion()
-{
-    OSVERSIONINFO info = { 0 };
-    info.dwOSVersionInfoSize = sizeof(info);
-    GetVersionEx(&info);
-
-    // TODO
-    return "";
-}
-
-// static 
-void SysInfo::OperatingSystemVersionNumbers(int32 *major_version,
-                                          int32 *minor_version,
-                                          int32 *bugfix_version)
-{
-    OSVERSIONINFO info = { 0 };
-    info.dwOSVersionInfoSize = sizeof(info);
-    GetVersionEx(&info);
-
-    *major_version  = info.dwMajorVersion;
-    *minor_version  = info.dwMinorVersion;
-    *bugfix_version = 0;
-}
-
-// static 
-std::string SysInfo::CPUArchitecture()
-{
-    return "x86";
-}
-
-// static 
-void SysInfo::GetPrimaryDisplayDimensions(int32 *width, int32 *height)
-{
-    if (width)
-    {
-        *width = GetSystemMetrics(SM_CXSCREEN);
+        (void *) var;
+        //TODO
+        return L"";
     }
 
-    if (height)
-    {
-        *height = GetSystemMetrics(SM_CYSCREEN);
+// static 
+    std::string SysInfo::OperatingSystemName() {
+        return "Windows NT";
     }
-}
 
 // static 
-int32 SysInfo::DisplayCount()
-{
-    return GetSystemMetrics(SM_CMONITORS);
-}
+    std::string SysInfo::OperatingSystemVersion() {
+        OSVERSIONINFO info = {0};
+        info.dwOSVersionInfoSize = sizeof(info);
+        GetVersionEx(&info);
+
+        // TODO
+        return "";
+    }
 
 // static 
-size_t SysInfo::VMAllocationGranularity()
-{
-    SYSTEM_INFO info;
-    GetSystemInfo(&info);
+    void SysInfo::OperatingSystemVersionNumbers(int32 *major_version,
+                                                int32 *minor_version,
+                                                int32 *bugfix_version) {
+        OSVERSIONINFO info = {0};
+        info.dwOSVersionInfoSize = sizeof(info);
+        GetVersionEx(&info);
 
-    return info.dwAllocationGranularity;
-}
+        *major_version = info.dwMajorVersion;
+        *minor_version = info.dwMinorVersion;
+        *bugfix_version = 0;
+    }
+
+// static 
+    std::string SysInfo::CPUArchitecture() {
+        return "x86";
+    }
+
+// static 
+    void SysInfo::GetPrimaryDisplayDimensions(int32 *width, int32 *height) {
+        if (width) {
+            *width = GetSystemMetrics(SM_CXSCREEN);
+        }
+
+        if (height) {
+            *height = GetSystemMetrics(SM_CYSCREEN);
+        }
+    }
+
+// static 
+    int32 SysInfo::DisplayCount() {
+        return GetSystemMetrics(SM_CMONITORS);
+    }
+
+// static 
+    size_t SysInfo::VMAllocationGranularity() {
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+
+        return info.dwAllocationGranularity;
+    }
 
 }

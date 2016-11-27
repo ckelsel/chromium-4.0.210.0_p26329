@@ -18,7 +18,9 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+
 #include <windows.h>
+
 #elif defined(OS_POSIX)
 #include <pthread.h>
 #endif
@@ -29,8 +31,7 @@
 // This class implements the underlying platform-specific spin-lock mechanism
 // used for the Lock class.  Most users should not use LockImpl directly, but
 // should instead use Lock.
-class LockImpl
-{
+class LockImpl {
 
 public:
 
@@ -64,7 +65,9 @@ public:
 #if defined(NDEBUG) || !defined(OS_WIN)
     void AssertAcquired() const { }
 #else
+
     void AssertAcquired() const;
+
 #endif
 
 private:
@@ -76,7 +79,7 @@ private:
     // Be VERY careful to only access members under that lock.
     PlatformThreadId owning_thread_id_;
     int32 recursion_count_shadow_;
-    bool  recursion_used_;
+    bool recursion_used_;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(LockImpl);

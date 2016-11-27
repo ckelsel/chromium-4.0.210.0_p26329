@@ -18,14 +18,14 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 
-namespace base
-{
+namespace base {
 
-class StringPiece;
+    class StringPiece;
 
 // Converts between wide and UTF-8 representations of a string. On error, the
 // result is system-dependent.
-std::string  SysWideToUTF8(const std::wstring &wide);
-std::wstring SysUTF8ToWide(const StringPiece &utf8);
+    std::string SysWideToUTF8(const std::wstring &wide);
+
+    std::wstring SysUTF8ToWide(const StringPiece &utf8);
 
 }

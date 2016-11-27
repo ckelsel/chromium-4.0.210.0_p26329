@@ -13,31 +13,4 @@
  * limitations under the License.
  */
 
-#ifndef BASE_WIN_UTIL_H_
-#define BASE_WIN_UTIL_H_
-
-#include <windows.h>
-#include <aclapi.h>
-
-#include <string>
-
-namespace win_util {
-
-    enum WinVersion {
-        WINVERSION_PRE_2000 = 0,
-        WINVERSION_2000 = 1,
-        WINVERSION_XP = 2,
-        WINVERSION_SERVER_2003 = 3,
-        WINVERSION_VISTA = 4,
-        WINVERSION_2008 = 5,
-        WINVERSION_WIN7 = 6,
-    };
-
-    void GetNonClientMetrics(NONCLIENTMETRICS *metrics);
-
-// Returns the running version of Windows.
-    WinVersion GetWinVersion();
-
-}
-
-#endif //BASE_WIN_UTIL_H_
+#include "Time.h"

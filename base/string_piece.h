@@ -33,211 +33,199 @@
 
 #include "base/basictypes.h"
 
-namespace base 
-{
+namespace base {
 
-class StringPiece
-{
+    class StringPiece {
 
-public:
+    public:
 
-    typedef size_t size_type;
+        typedef size_t size_type;
 
-private:
+    private:
 
-    const char *    ptr_;
-    size_type       length_;
+        const char *ptr_;
+        size_type length_;
 
-public:
-    StringPiece() : ptr_(NULL), length_(0) { }
-    StringPiece(const char *str) 
-        : ptr_(str), length_((str == NULL) ? 0 : strlen(str)) { }
-    StringPiece(const std::string &str)
-        : ptr_(str.data()), length_(str.length()) { }
-    StringPiece(const char *offset, size_type len)
-        : ptr_(offset), length_(len) { }
+    public:
+        StringPiece() : ptr_(NULL), length_(0) {}
 
+        StringPiece(const char *str)
+                : ptr_(str), length_((str == NULL) ? 0 : strlen(str)) {}
 
-    // data() may not be null terminated.
-    const char *data() const { return ptr_; }
+        StringPiece(const std::string &str)
+                : ptr_(str.data()), length_(str.length()) {}
 
-    size_type size() const { return length_; }
-
-    size_type length() const { return length_; }
-
-    bool empty() const { return length_ == 0; }
+        StringPiece(const char *offset, size_type len)
+                : ptr_(offset), length_(len) {}
 
 
-    void clear() 
-    { 
-        ptr_ = NULL;
-        length_ = 0;
-    }
+        // data() may not be null terminated.
+        const char *data() const { return ptr_; }
 
-    void set(const char *data, size_type len) 
-    { 
-        ptr_ = data; 
-        length_ = len;
-    }
+        size_type size() const { return length_; }
 
-    void set(const char *data) 
-    { 
-        ptr_ = data;
-        length_ = (data == NULL) ? 0 : strlen(data); 
-    }
+        size_type length() const { return length_; }
 
-    void set(const void *data, size_type len)
-    {
-        ptr_ = reinterpret_cast<const char*>(data);
-        length_ = len;
-    }
+        bool empty() const { return length_ == 0; }
 
-    char operator[](size_type i) { return ptr_[i]; }
 
-    void remove_prefix(size_type n)
-    {
-        ptr_ += n;
-        length_ -= n;
-    }
-
-    void remove_suffix(size_type n) { length_ -= n; }
-
-    int compare(const StringPiece &x) const
-    {
-        int r = wordmemcmp(ptr_, x.ptr_, std::min(length_, x.length_));
-        if (0 == r)
-        {
-            if (length_ < x.length_)
-            {
-                r = -1;
-            }
-            else if (length_ > x.length_)
-            {
-                r = 1;
-            }
+        void clear() {
+            ptr_ = NULL;
+            length_ = 0;
         }
 
-        return r;
+        void set(const char *data, size_type len) {
+            ptr_ = data;
+            length_ = len;
+        }
+
+        void set(const char *data) {
+            ptr_ = data;
+            length_ = (data == NULL) ? 0 : strlen(data);
+        }
+
+        void set(const void *data, size_type len) {
+            ptr_ = reinterpret_cast<const char *>(data);
+            length_ = len;
+        }
+
+        char operator[](size_type i) { return ptr_[i]; }
+
+        void remove_prefix(size_type n) {
+            ptr_ += n;
+            length_ -= n;
+        }
+
+        void remove_suffix(size_type n) { length_ -= n; }
+
+        int compare(const StringPiece &x) const {
+            int r = wordmemcmp(ptr_, x.ptr_, std::min(length_, x.length_));
+            if (0 == r) {
+                if (length_ < x.length_) {
+                    r = -1;
+                } else if (length_ > x.length_) {
+                    r = 1;
+                }
+            }
+
+            return r;
+        }
+
+        // StringPiece(const char *offset, size_type n);
+        std::string as_string() const {
+            return std::string((length_ == 0) ? "" : ptr_, length_);
+        }
+
+        void copy_to_string(std::string *target);
+
+        void append_to_string(std::string *target);
+
+        bool starts_with(const StringPiece &x) const {
+            return ((length_ >= x.length_) &&
+                    (wordmemcmp(ptr_, x.ptr_, x.length_) == 0));
+        }
+
+        bool ends_with(const StringPiece &x) const {
+            return ((length_ >= x.length_) &&
+                    (wordmemcmp(ptr_ + (length_ - x.length_), x.ptr_, x.length_) == 0));
+        }
+
+        // standard STL container boilerplate
+
+        typedef char value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+        typedef const char &const_reference;
+        typedef ptrdiff_t difference_type;
+        static const size_type npos;
+        typedef const char *iterator;
+        typedef const char *const_iterator;
+        typedef std::reverse_iterator<iterator> reverse_iterator;
+        typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+
+        iterator begin() { return ptr_; }
+
+        iterator end() { return ptr_ + length_; }
+
+        const_reverse_iterator rbegin() { return const_reverse_iterator(ptr_ + length_); }
+
+        const_reverse_iterator rend() { return const_reverse_iterator(ptr_); }
+
+
+        size_type max_size() const { return length_; }
+
+        size_type capacity() const { return length_; }
+
+        size_type copy(char *buf, size_type n, size_type pos = 0) const;
+
+
+        // Finds the first substring equal to the given character sequence.
+        // Search begins at pos,
+        // i.e. the found substring must not begin in a position preceding pos.
+        //
+        // @return Position of the first character of the found substring or npos if no such
+        // substring is found.
+        size_type find(const StringPiece &s, size_type pos = 0) const;
+
+        size_type find(char c, size_type pos = 0) const;
+
+        // Finds the last substring equal to the given character sequence. Search
+        // begins at pos, i.e. the found substring must not begin in a position
+        // following pos. If npos or any value not smaller than size()-1 is passed
+        // as pos, whole string will be searched.
+        size_type rfind(const StringPiece &s, size_type pos = npos) const;
+
+        size_type rfind(char c, size_type pos = npos) const;
+
+
+        size_type find_first_of(const StringPiece &s, size_type pos = 0) const;
+
+        size_type find_first_of(char c, size_type pos = 0) const;
+
+        size_type find_first_not_of(const StringPiece &s, size_type pos = 0) const;
+
+        size_type find_first_not_of(char c, size_type pos = 0) const;
+
+        size_type find_last_of(const StringPiece &s, size_type pos = npos) const;
+
+        size_type find_last_of(char c, size_type pos = npos) const;
+
+        size_type find_last_not_of(const StringPiece &s, size_type pos = npos) const;
+
+        size_type find_last_not_of(char c, size_type pos = npos) const;
+
+
+        StringPiece substr(size_type pos, size_type n = npos) const;
+
+
+        static int wordmemcmp(const char *p, const char *p2, size_type N) {
+            return memcmp(p, p2, N);
+        }
+
+    }; // class StringPiece
+
+    bool operator==(const StringPiece &x, const StringPiece &y);
+
+    inline bool operator!=(const StringPiece &x, const StringPiece &y) {
+        return !(x == y);
     }
 
-    // StringPiece(const char *offset, size_type n);
-    std::string as_string() const
-    {
-        return std::string((length_ == 0) ? "" : ptr_, length_);
+    inline bool operator<(const StringPiece &x, const StringPiece &y) {
+        return x.compare(y) < 0;
     }
 
-    void copy_to_string(std::string *target);
-
-    void append_to_string(std::string *target);
-
-    bool starts_with(const StringPiece &x) const
-    {
-        return ((length_ >= x.length_) &&
-                (wordmemcmp(ptr_, x.ptr_, x.length_) == 0));
+    inline bool operator>(const StringPiece &x, const StringPiece &y) {
+        return y < x;
     }
 
-    bool ends_with(const StringPiece &x) const
-    {
-        return ((length_ >= x.length_) &&
-                (wordmemcmp(ptr_ + (length_ - x.length_), x.ptr_, x.length_) == 0));
+    inline bool operator<=(const StringPiece &x, const StringPiece &y) {
+        return !(x > y);
     }
 
-    // standard STL container boilerplate
-
-    typedef char value_type;
-    typedef const char *pointer;
-    typedef const char &reference;
-    typedef const char &const_reference;
-    typedef ptrdiff_t difference_type;
-    static const size_type npos;
-    typedef const char *iterator;
-    typedef const char *const_iterator;
-    typedef std::reverse_iterator<iterator> reverse_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-    
-
-    iterator begin() { return ptr_; }
-
-    iterator end() { return ptr_ + length_; }
-
-    const_reverse_iterator rbegin() { return const_reverse_iterator(ptr_ + length_); }
-    
-    const_reverse_iterator rend() { return const_reverse_iterator(ptr_); }
-
-
-    size_type max_size() const { return length_; }
-
-    size_type capacity() const { return length_; }
-
-    size_type copy(char *buf, size_type n, size_type pos = 0) const;
-
-
-    // Finds the first substring equal to the given character sequence.
-    // Search begins at pos, 
-    // i.e. the found substring must not begin in a position preceding pos.
-    //
-    // @return Position of the first character of the found substring or npos if no such
-    // substring is found.
-    size_type find(const StringPiece &s, size_type pos = 0) const;
-    size_type find(char c, size_type pos = 0) const;
-
-    // Finds the last substring equal to the given character sequence. Search
-    // begins at pos, i.e. the found substring must not begin in a position
-    // following pos. If npos or any value not smaller than size()-1 is passed
-    // as pos, whole string will be searched.
-    size_type rfind(const StringPiece &s, size_type pos = npos) const;
-    size_type rfind(char c, size_type pos = npos) const;
-
-
-    size_type find_first_of(const StringPiece &s, size_type pos = 0) const;
-    size_type find_first_of(char c, size_type pos = 0) const;
-
-    size_type find_first_not_of(const StringPiece &s, size_type pos = 0) const;
-    size_type find_first_not_of(char c, size_type pos = 0) const;
-
-    size_type find_last_of(const StringPiece &s, size_type pos = npos) const;
-    size_type find_last_of(char c, size_type pos = npos) const;
-
-    size_type find_last_not_of(const StringPiece &s, size_type pos = npos) const;
-    size_type find_last_not_of(char c, size_type pos = npos) const;
-    
-
-    StringPiece substr(size_type pos, size_type n = npos) const;
-    
-
-    static int wordmemcmp(const char *p, const char *p2, size_type N)
-    {
-        return memcmp(p, p2, N);
+    inline bool operator>=(const StringPiece &x, const StringPiece &y) {
+        return !(x < y);
     }
-
-}; // class StringPiece
-
-bool operator==(const StringPiece &x, const StringPiece &y);
-
-inline bool operator!=(const StringPiece &x, const StringPiece &y)
-{
-    return !(x == y);
-}
-
-inline bool operator<(const StringPiece &x, const StringPiece &y)
-{
-    return x.compare(y) < 0;
-}
-
-inline bool operator>(const StringPiece &x, const StringPiece &y)
-{
-    return y < x;
-}
-
-inline bool operator<=(const StringPiece &x, const StringPiece &y)
-{
-    return !(x > y);
-}
-
-inline bool operator>=(const StringPiece &x, const StringPiece &y)
-{
-    return !(x < y);
-}
 
 } // namespace base 
 

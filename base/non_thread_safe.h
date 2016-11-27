@@ -50,9 +50,11 @@ public:
     }
 };
 #else
+
 class NonThreadSafe {
 public:
     NonThreadSafe();
+
     ~NonThreadSafe();
 
     bool CalledOnValidThread() const;
@@ -60,8 +62,8 @@ public:
 private:
     PlatformThreadId valid_thread_id_;
 };
-#endif
 
+#endif
 
 
 #endif // BASE_NON_THREAD_SAFE_H_

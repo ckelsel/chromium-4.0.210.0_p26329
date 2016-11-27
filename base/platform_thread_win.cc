@@ -29,39 +29,33 @@ typedef struct tagTHREADNAME_INFO {
     DWORD dwFlags;  // Reserved for future use, must be zero.
 } THREADNAME_INFO;
 
-DWORD __stdcall ThreadFunc(void *closure)
-{
+DWORD __stdcall ThreadFunc(void *closure) {
     PlatformThread::Delegate *delegate =
-            static_cast<PlatformThread::Delegate*>(closure);
+            static_cast<PlatformThread::Delegate *>(closure);
     delegate->ThreadMain();
     return NULL;
 }
 
 //static 
-PlatformThreadId PlatformThread::CurrentId()
-{
+PlatformThreadId PlatformThread::CurrentId() {
     return GetCurrentThreadId();
 }
 
 //static 
-void PlatformThread::YieldCurrentThread()
-{
+void PlatformThread::YieldCurrentThread() {
     ::Sleep(0);
 }
 
 //static 
-void PlatformThread::Sleep(int duration_ms)
-{
+void PlatformThread::Sleep(int duration_ms) {
     ::Sleep(duration_ms);
 }
 
 //static 
-void PlatformThread::SetName(const char *name)
-{
+void PlatformThread::SetName(const char *name) {
     // The debugger needs to be around to catch the name in the exception.  If
     // there isn't a debugger, we are just needlessly throwing an exception.
-    if (!::IsDebuggerPresent())
-    {
+    if (!::IsDebuggerPresent()) {
         return;
     }
 
@@ -71,29 +65,27 @@ void PlatformThread::SetName(const char *name)
     info.dwThreadID = CurrentId();
     info.dwFlags = 0;
 
-    __try 
-    {
-        RaiseException(kVCThreadNameException, 0, sizeof(info)/sizeof(DWORD),
-                       reinterpret_cast<DWORD_PTR*>(&info));
-    } __except(EXCEPTION_CONTINUE_EXECUTION) 
+    __try {
+        RaiseException(kVCThreadNameException, 0, sizeof(info) / sizeof(DWORD),
+                       reinterpret_cast<DWORD_PTR *>(&info));
+    }
+    __except(EXCEPTION_CONTINUE_EXECUTION)
     {
     }
 }
 
 //static
-bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate *delegate)
-{
+bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate *delegate) {
     PlatformThreadHandle thread_handle;
 
-    bool result =  Create(stack_size, delegate, &thread_handle);
+    bool result = Create(stack_size, delegate, &thread_handle);
     CloseHandle(thread_handle);
     return result;
 }
 
 //static
 bool PlatformThread::Create(size_t stack_size, Delegate *delegate,
-                   PlatformThreadHandle *thread_handle)
-{
+                            PlatformThreadHandle *thread_handle) {
     DWORD flags = 0;
     if (stack_size > 0 && win_util::GetWinVersion() >= win_util::WINVERSION_XP) {
         flags = STACK_SIZE_PARAM_IS_A_RESERVATION;
@@ -111,8 +103,7 @@ bool PlatformThread::Create(size_t stack_size, Delegate *delegate,
 }
 
 //static
-void PlatformThread::Join(PlatformThreadHandle thread_handle)
-{
+void PlatformThread::Join(PlatformThreadHandle thread_handle) {
     // Wait for the thread to exit.  It should already have terminated but make
     // sure this assumption is valid.
     DWORD result = WaitForSingleObject(thread_handle, INFINITE);

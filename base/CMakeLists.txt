@@ -7,6 +7,7 @@ set(SRC_FILES ${SRC_FILES} string_piece.cc)
 set(SRC_FILES ${SRC_FILES} logging.cc)
 set(SRC_FILES ${SRC_FILES} debug_util.cc)
 set(SRC_FILES ${SRC_FILES} non_thread_safe.cc)
+set(SRC_FILES ${SRC_FILES} time.cc)
 
 if (NOT WIN32)
     set(SRC_FILES ${SRC_FILES} string16.cc)

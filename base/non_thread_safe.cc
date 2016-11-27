@@ -16,21 +16,19 @@
 #include "base/non_thread_safe.h"
 
 #if !defined(NDEBUG)
+
 #include "base/logging.h"
 
 
 NonThreadSafe::NonThreadSafe()
-    : valid_thread_id_ (PlatformThread::CurrentId())
-{
+        : valid_thread_id_(PlatformThread::CurrentId()) {
 }
 
-NonThreadSafe::~NonThreadSafe()
-{
+NonThreadSafe::~NonThreadSafe() {
     DCHECK(CalledOnValidThread());
 }
 
-bool NonThreadSafe::CalledOnValidThread() const
-{
+bool NonThreadSafe::CalledOnValidThread() const {
     return valid_thread_id_ == PlatformThread::CurrentId();
 }
 

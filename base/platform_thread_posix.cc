@@ -20,29 +20,25 @@
 #include "base/logging.h"
 
 
-static void* ThreadFunc(void *closure)
-{
-    PlatformThread::Delegate *delegate = 
-        static_cast<PlatformThread::Delegate*>(closure);
+static void *ThreadFunc(void *closure) {
+    PlatformThread::Delegate *delegate =
+            static_cast<PlatformThread::Delegate *>(closure);
     delegate->ThreadMain();
     return NULL;
 }
 
 //static 
-PlatformThreadId PlatformThread::CurrentId()
-{
+PlatformThreadId PlatformThread::CurrentId() {
     return syscall(__NR_gettid);
 }
 
 //static 
-void PlatformThread::YieldCurrentThread()
-{
+void PlatformThread::YieldCurrentThread() {
     sched_yield();
 }
 
 //static 
-void PlatformThread::Sleep(int duration_ms)
-{
+void PlatformThread::Sleep(int duration_ms) {
     struct timespec sleep_time, remaining;
 
     // Contains the portion of duration_ms >= 1 sec.
@@ -52,15 +48,13 @@ void PlatformThread::Sleep(int duration_ms)
     // Contains the portion of duration_ms < 1 sec.
     sleep_time.tv_nsec = duration_ms * 1000 * 1000;  // nanoseconds.
 
-    while (nanosleep(&sleep_time, &remaining) == -1 && errno == EINTR)
-    {
+    while (nanosleep(&sleep_time, &remaining) == -1 && errno == EINTR) {
         sleep_time = remaining;
     }
 }
 
 //static 
-void PlatformThread::SetName(const char *name)
-{
+void PlatformThread::SetName(const char *name) {
     // The POSIX standard does not provide for naming threads, and neither Linux
     // nor Mac OS X (our two POSIX targets) provide any non-portable way of doing
     // it either. (Some BSDs provide pthread_set_name_np but that isn't much of a
@@ -69,21 +63,18 @@ void PlatformThread::SetName(const char *name)
 
 bool CreateThread(size_t stack_size, bool joinable,
                   PlatformThread::Delegate *delegate,
-                  PlatformThreadHandle *thread_handle)
-{
+                  PlatformThreadHandle *thread_handle) {
     bool success = false;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
 
     // Pthreads are joinable by default, so only specify the detached attribute if
     // the thread should be non-joinable.
-    if (!joinable)
-    {
+    if (!joinable) {
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     }
 
-    if (stack_size > 0)
-    {
+    if (stack_size > 0) {
         pthread_attr_setstacksize(&attr, stack_size);
     }
 
@@ -95,22 +86,19 @@ bool CreateThread(size_t stack_size, bool joinable,
 
 //static 
 bool PlatformThread::Create(size_t stack_size, Delegate *delegate,
-                            PlatformThreadHandle *thread_handle)
-{
+                            PlatformThreadHandle *thread_handle) {
     return CreateThread(stack_size, true, delegate, thread_handle);
 }
 
 //static 
-bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate *delegate)
-{
+bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate *delegate) {
     PlatformThreadHandle unused;
 
     return CreateThread(stack_size, false, delegate, &unused);
 }
 
 //static 
-void PlatformThread::Join(PlatformThreadHandle thread_handle)
-{
+void PlatformThread::Join(PlatformThreadHandle thread_handle) {
     pthread_join(thread_handle, NULL);
 }
 

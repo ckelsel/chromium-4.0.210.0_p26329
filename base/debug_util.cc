@@ -15,39 +15,32 @@
 #include "base/debug_util.h"
 #include "base/platform_thread.h"
 
-namespace base 
-{
+namespace base {
 
-bool DebugUtil::WaitForDebugger(int32 wait_seconds, bool silent)
-{
-    for (int32 i = 0; i < wait_seconds * 10; ++i)
-    {
-        if (BeingDebugged())
-        {
-            if (!silent)
-            {
-                BreakDebugger();
+    bool DebugUtil::WaitForDebugger(int32 wait_seconds, bool silent) {
+        for (int32 i = 0; i < wait_seconds * 10; ++i) {
+            if (BeingDebugged()) {
+                if (!silent) {
+                    BreakDebugger();
+                }
+
+                return true;
             }
-
-            return true;
+            PlatformThread::Sleep(100);
         }
-        PlatformThread::Sleep(100);
+
+        return false;
     }
 
-    return false;
-}
 
+    const void *const *StackTrace::Address(size_t *count) {
+        *count = count_;
 
-const void* const* StackTrace::Address(size_t *count)
-{
-    *count = count_;
+        if (count_) {
+            return trace_;
+        }
 
-    if (count_)
-    {
-        return trace_;
+        return NULL;
     }
-
-    return NULL;
-}
 
 }

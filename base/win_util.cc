@@ -16,14 +16,13 @@
 #include "win_util.h"
 
 namespace win_util {
-    WinVersion GetWinVersion()
-    {
+    WinVersion GetWinVersion() {
         static bool checked_version = false;
         static WinVersion win_version = WINVERSION_PRE_2000;
         if (!checked_version) {
             OSVERSIONINFOEX version_info;
             version_info.dwOSVersionInfoSize = sizeof version_info;
-            GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version_info));
+            GetVersionEx(reinterpret_cast<OSVERSIONINFO *>(&version_info));
             if (version_info.dwMajorVersion == 5) {
                 switch (version_info.dwMinorVersion) {
                     case 0:

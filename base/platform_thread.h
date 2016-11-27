@@ -18,12 +18,13 @@
 #include "base/basictypes.h"
 
 #if defined(OS_WIN)
+
 #include <windows.h>
+
 #elif defined(OS_POSIX)
 #include <pthread.h>
 #include <unistd.h>
 #endif
-
 
 
 #if defined(OS_WIN)
@@ -34,8 +35,7 @@ typedef pid_t PlatformThreadId;
 typedef pthread_t PlatformThreadHandle;
 #endif
 
-class PlatformThread
-{
+class PlatformThread {
 
 public:
 
@@ -53,12 +53,11 @@ public:
 
     // Implement this interface to run code on a background thread.  Your
     // ThreadMain method will be called on the newly created thread.
-    class Delegate
-    {
+    class Delegate {
     public:
-        virtual ~Delegate() { }
+        virtual ~Delegate() {}
 
-        virtual void ThreadMain() = 0; 
+        virtual void ThreadMain() = 0;
     };
 
     // CreateNonJoinable() does the same thing as Create() except the thread

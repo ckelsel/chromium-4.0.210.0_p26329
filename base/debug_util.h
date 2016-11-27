@@ -24,76 +24,75 @@
 struct _EXCEPTION_POINTERS;
 #endif
 
-namespace base
-{
+namespace base {
 
 // A stacktrace can be helpful in debugging. For example, you can include a
 // stacktrace member in a object (probably around #ifndef NDEBUG) so that you
 // can later see where the given object was created from.
-class StackTrace
-{
+    class StackTrace {
 
-public:
+    public:
 
-    // Creates a stacktrace from the current location
-    StackTrace();
+        // Creates a stacktrace from the current location
+        StackTrace();
 
 #if defined(OS_WIN)
-    // Creates a stacktrace for an exception.
-    // Note: this function will throw an import not found (StackWalk64) exception
-    // on system without dbghelp 5.1.
-    StackTrace(_EXCEPTION_POINTERS* exception_pointers);
+
+        // Creates a stacktrace for an exception.
+        // Note: this function will throw an import not found (StackWalk64) exception
+        // on system without dbghelp 5.1.
+        StackTrace(_EXCEPTION_POINTERS *exception_pointers);
+
 #endif
 
-    // Gets an array of instruction pointer values.
-    //   count: (output) the number of elements in the returned array
-    const void* const* Address(size_t *count);
+        // Gets an array of instruction pointer values.
+        //   count: (output) the number of elements in the returned array
+        const void *const *Address(size_t *count);
 
-    // Prints a backtrace to stderr.
-    void PrintBackTrace();
+        // Prints a backtrace to stderr.
+        void PrintBackTrace();
 
-    // Resolves backtrace to symbols and write to stream.
-    void OutputToStream(std::ostream *os);
+        // Resolves backtrace to symbols and write to stream.
+        void OutputToStream(std::ostream *os);
 
-private:
+    private:
 
-     // From http://msdn.microsoft.com/en-us/library/bb204633.aspx,
-     // the sum of FramesToSkip and FramesToCapture must be less than 63,
-     // so set it to 62. Even if on POSIX it could be a larger value, it usually
-     // doesn't give much more information.
-    static const int MAX_TRACES = 62;
+        // From http://msdn.microsoft.com/en-us/library/bb204633.aspx,
+        // the sum of FramesToSkip and FramesToCapture must be less than 63,
+        // so set it to 62. Even if on POSIX it could be a larger value, it usually
+        // doesn't give much more information.
+        static const int MAX_TRACES = 62;
 
-    void *trace_[MAX_TRACES];
+        void *trace_[MAX_TRACES];
 
-    int count_;
+        int count_;
 
-    DISALLOW_COPY_AND_ASSIGN(StackTrace);
-}; // class StackTrace
+        DISALLOW_COPY_AND_ASSIGN(StackTrace);
+    }; // class StackTrace
 
-class DebugUtil
-{
+    class DebugUtil {
 
-public:
+    public:
 
-    // Starts the registered system-wide JIT debugger to attach it to specified
-    // process.
-    static bool SpawnDebuggerOnProcess(unsigned process_id);
+        // Starts the registered system-wide JIT debugger to attach it to specified
+        // process.
+        static bool SpawnDebuggerOnProcess(unsigned process_id);
 
-    // Waits wait_seconds seconds for a debugger to attach to the current process.
-    // When silent is false, an exception is thrown when a debugger is detected.
-    static bool WaitForDebugger(int32 wait_seconds, bool silent);
+        // Waits wait_seconds seconds for a debugger to attach to the current process.
+        // When silent is false, an exception is thrown when a debugger is detected.
+        static bool WaitForDebugger(int32 wait_seconds, bool silent);
 
-    // Are we running under a debugger?
-    // On OS X, the underlying mechanism doesn't work when the sandbox is enabled.
-    // To get around this, this function caches its value.
-    // WARNING: Because of this, on OS X, a call MUST be made to this function
-    // BEFORE the sandbox is enabled.
-    static bool BeingDebugged();
+        // Are we running under a debugger?
+        // On OS X, the underlying mechanism doesn't work when the sandbox is enabled.
+        // To get around this, this function caches its value.
+        // WARNING: Because of this, on OS X, a call MUST be made to this function
+        // BEFORE the sandbox is enabled.
+        static bool BeingDebugged();
 
-    // Break into the debugger, assumes a debugger is present.
-    static void BreakDebugger();
+        // Break into the debugger, assumes a debugger is present.
+        static void BreakDebugger();
 
-}; // class DebugUtil
+    }; // class DebugUtil
 
 } // namesapce base
 

@@ -15,8 +15,7 @@
 #ifndef BASE_REF_COUNTED_H_
 #define BASE_REF_COUNTED_H_
 
-namespace base
-{
+namespace base {
 
 }
 

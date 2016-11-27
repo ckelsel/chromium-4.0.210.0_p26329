@@ -20,8 +20,7 @@
 // acquire the lock a second time (while already holding it).
 
 
-LockImpl::LockImpl()
-{
+LockImpl::LockImpl() {
 #if !defined(NDEBUG) && defined(OS_WIN)
     recursion_used_ = false;
     owning_thread_id_ = 0;
@@ -30,22 +29,18 @@ LockImpl::LockImpl()
     ::InitializeCriticalSectionAndSpinCount(&os_lock_, 2000);
 }
 
-LockImpl::~LockImpl()
-{
+LockImpl::~LockImpl() {
     ::DeleteCriticalSection(&os_lock_);
 }
 
-bool LockImpl::Try()
-{
-    if (::TryEnterCriticalSection(&os_lock_) != FALSE)
-    {
+bool LockImpl::Try() {
+    if (::TryEnterCriticalSection(&os_lock_) != FALSE) {
 #if !defined(NDEBUG) && defined(OS_WIN)
         // ONLY access data after locking.
         owning_thread_id_ = PlatformThread::CurrentId();
         DCHECK(owning_thread_id_ != 0);
         recursion_count_shadow_++;
-        if (2 == recursion_count_shadow_ && !recursion_used_)
-        {
+        if (2 == recursion_count_shadow_ && !recursion_used_) {
             recursion_used_ = true;
             DCHECK(false);
         }
@@ -56,25 +51,22 @@ bool LockImpl::Try()
     return false;
 }
 
-void LockImpl::Lock()
-{
+void LockImpl::Lock() {
     ::EnterCriticalSection(&os_lock_);
 
 #if !defined(NDEBUG) && defined(OS_WIN)
-        // ONLY access data after locking.
-        owning_thread_id_ = PlatformThread::CurrentId();
-        DCHECK(owning_thread_id_ != 0);
-        recursion_count_shadow_++;
-        if (2 == recursion_count_shadow_ && !recursion_used_)
-        {
-            recursion_used_ = true;
-            DCHECK(false);
-        }
+    // ONLY access data after locking.
+    owning_thread_id_ = PlatformThread::CurrentId();
+    DCHECK(owning_thread_id_ != 0);
+    recursion_count_shadow_++;
+    if (2 == recursion_count_shadow_ && !recursion_used_) {
+        recursion_used_ = true;
+        DCHECK(false);
+    }
 #endif
 }
 
-void LockImpl::Unlock()
-{
+void LockImpl::Unlock() {
 #if !defined(NDEBUG) && defined(OS_WIN)
     --recursion_count_shadow_;
     DCHECK(recursion_count_shadow_ >= 0);
@@ -85,9 +77,10 @@ void LockImpl::Unlock()
 }
 
 #if !defined(NDEBUG) && defined(OS_WIN)
-void LockImpl::AssertAcquired() const
-{
+
+void LockImpl::AssertAcquired() const {
     DCHECK(recursion_count_shadow_ > 0);
     DCHECK(owning_thread_id_ == PlatformThread::CurrentId());
 }
+
 #endif

@@ -37,8 +37,10 @@ TEST(non_thread_safe, same_thread)
 
 TEST(non_thread_safe, different_thread)
 {
-    MyClass *test = new MyClass();
     PlatformThreadHandle thread_handle;
+    MyClass *test = new MyClass();
+
+    ASSERT_TRUE(test->CalledOnValidThread());
 
     bool success = PlatformThread::Create(0, test, &thread_handle);
     ASSERT_TRUE(success);

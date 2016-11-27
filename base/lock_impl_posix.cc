@@ -17,8 +17,7 @@
 #include "base/lock_impl.h"
 #include "base/logging.h"
 
-LockImpl::LockImpl()
-{
+LockImpl::LockImpl() {
 #ifndef NDEBUG
     // In debug, setup attributes for lock error checking. 
     pthread_mutexattr_t attr;
@@ -36,27 +35,23 @@ LockImpl::LockImpl()
 #endif
 }
 
-LockImpl::~LockImpl()
-{
+LockImpl::~LockImpl() {
     int rv = pthread_mutex_destroy(&os_lock_);
     DCHECK(rv == 0);
 }
 
-bool LockImpl::Try()
-{
+bool LockImpl::Try() {
     int rv = pthread_mutex_trylock(&os_lock_);
     DCHECK(rv == 0 || rv == EBUSY);
     return rv == 0;
 }
 
-void LockImpl::Lock()
-{
+void LockImpl::Lock() {
     int rv = pthread_mutex_lock(&os_lock_);
     DCHECK(rv == 0);
 }
 
-void LockImpl::Unlock()
-{
+void LockImpl::Unlock() {
     int rv = pthread_mutex_unlock(&os_lock_);
     DCHECK(rv == 0);
 }

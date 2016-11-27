@@ -19,19 +19,16 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 
-namespace base
-{
+namespace base {
 
-std::string  SysWideToUTF8(const std::wstring &wide)
-{
-    (void)wide;
-    return NULL;
-}
+    std::string SysWideToUTF8(const std::wstring &wide) {
+        (void) wide;
+        return NULL;
+    }
 
-std::wstring SysUTF8ToWide(const StringPiece &utf8)
-{
-    (void)utf8;
-    return NULL;
-}
+    std::wstring SysUTF8ToWide(const StringPiece &utf8) {
+        (void) utf8;
+        return NULL;
+    }
 
 }
