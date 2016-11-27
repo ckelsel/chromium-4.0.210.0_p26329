@@ -19,8 +19,6 @@
 #include "base/platform_thread.h"
 #include "base/logging.h"
 
-namespace base
-{
 
 static void* ThreadFunc(void *closure)
 {
@@ -116,4 +114,4 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle)
     pthread_join(thread_handle, NULL);
 }
 
-}
+

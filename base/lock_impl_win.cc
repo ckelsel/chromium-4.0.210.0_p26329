@@ -41,7 +41,7 @@ bool LockImpl::Try()
     {
 #if !defined(NDEBUG) && defined(OS_WIN)
         // ONLY access data after locking.
-        owning_thread_id_ = base::PlatformThread::CurrentId();
+        owning_thread_id_ = PlatformThread::CurrentId();
         DCHECK(owning_thread_id_ != 0);
         recursion_count_shadow_++;
         if (2 == recursion_count_shadow_ && !recursion_used_)
@@ -62,7 +62,7 @@ void LockImpl::Lock()
 
 #if !defined(NDEBUG) && defined(OS_WIN)
         // ONLY access data after locking.
-        owning_thread_id_ = base::PlatformThread::CurrentId();
+        owning_thread_id_ = PlatformThread::CurrentId();
         DCHECK(owning_thread_id_ != 0);
         recursion_count_shadow_++;
         if (2 == recursion_count_shadow_ && !recursion_used_)
@@ -88,6 +88,6 @@ void LockImpl::Unlock()
 void LockImpl::AssertAcquired() const
 {
     DCHECK(recursion_count_shadow_ > 0);
-    DCHECK(owning_thread_id_ == base::PlatformThread::CurrentId());
+    DCHECK(owning_thread_id_ == PlatformThread::CurrentId());
 }
 #endif

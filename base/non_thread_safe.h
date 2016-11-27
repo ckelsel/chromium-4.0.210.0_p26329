@@ -36,8 +36,6 @@
 // In Release mode, CalledOnValidThread will always return true.
 //
 
-namespace base
-{
 
 #if defined(NDEBUG)
 // Do nothing in release mode.
@@ -60,10 +58,10 @@ public:
     bool CalledOnValidThread() const;
 
 private:
-    base::PlatformThreadId valid_thread_id_;
+    PlatformThreadId valid_thread_id_;
 };
 #endif
 
-}
+
 
 #endif // BASE_NON_THREAD_SAFE_H_

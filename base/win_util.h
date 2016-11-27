@@ -13,26 +13,31 @@
  * limitations under the License.
  */
 
-#include "base/non_thread_safe.h"
+#ifndef BASE_WIN_UTIL_H_
+#define BASE_WIN_UTIL_H_
 
-#if !defined(NDEBUG)
-#include "base/logging.h"
+#include <windows.h>
+#include <aclapi.h>
 
+#include <string>
 
-NonThreadSafe::NonThreadSafe()
-    : valid_thread_id_ (PlatformThread::CurrentId())
-{
+namespace win_util {
+
+enum WinVersion {
+    WINVERSION_PRE_2000 = 0,
+    WINVERSION_2000 = 1,
+    WINVERSION_XP = 2,
+    WINVERSION_SERVER_2003 = 3,
+    WINVERSION_VISTA = 4,
+    WINVERSION_2008 = 5,
+    WINVERSION_WIN7 = 6,
+};
+
+void GetNonClientMetrics(NONCLIENTMETRICS* metrics);
+
+// Returns the running version of Windows.
+WinVersion GetWinVersion();
+
 }
 
-NonThreadSafe::~NonThreadSafe()
-{
-    DCHECK(CalledOnValidThread());
-}
-
-bool NonThreadSafe::CalledOnValidThread() const
-{
-    return valid_thread_id_ == PlatformThread::CurrentId();
-}
-
-
-#endif
+#endif //BASE_WIN_UTIL_H_

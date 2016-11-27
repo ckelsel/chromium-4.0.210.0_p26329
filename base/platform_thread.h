@@ -24,8 +24,7 @@
 #include <unistd.h>
 #endif
 
-namespace base
-{
+
 
 #if defined(OS_WIN)
 typedef DWORD PlatformThreadId;
@@ -89,6 +88,6 @@ private:
 
 }; // class PlatformThread
 
-} // namespace base
+
 
 #endif // BASE_PLATFORM_THREAD_H_

@@ -258,6 +258,36 @@ const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
     LOG_IF(FATAL, !(condition)) << "Check failed: " #condition ". "
 
 
+// A container for a string pointer which can be evaluated to a bool -
+// true iff the pointer is NULL.
+    struct CheckOpString {
+        CheckOpString(std::string* str) : str_(str) { }
+        // No destructor: if str_ is non-NULL, we're about to LOG(FATAL),
+        // so there's no point in cleaning up str_.
+        operator bool() const { return str_ != NULL; }
+        std::string* str_;
+    };
+
+// Build the error message string.  This is separate from the "Impl"
+// function template because it is not performance critical and so can
+// be out of line, while the "Impl" code should be inline.
+    template<class t1, class t2>
+    std::string* MakeCheckOpString(const t1& v1, const t2& v2, const char* names) {
+        std::ostringstream ss;
+        ss << names << " (" << v1 << " vs. " << v2 << ")";
+        std::string* msg = new std::string(ss.str());
+        return msg;
+    }
+
+    extern std::string* MakeCheckOpStringIntInt(int v1, int v2, const char* names);
+
+    template<int, int>
+    std::string* MakeCheckOpString(const int& v1,
+                                   const int& v2,
+                                   const char* names) {
+        return MakeCheckOpStringIntInt(v1, v2, names);
+    }
+
 
 // Plus some debug-logging macros that get compiled to nothing for production
 //
@@ -268,32 +298,228 @@ const LogSeverity LOG_DFATAL_LEVEL = LOG_FATAL;
 //     foo.CheckThatFoo();
 //   #endif
 
+// http://crbug.com/16512 is open for a real fix for this.  For now, Windows
+// uses OFFICIAL_BUILD and other platforms use the branding flag when NDEBUG is
+// defined.
+#if ( defined(OS_WIN) && defined(OFFICIAL_BUILD)) || \
+    (!defined(OS_WIN) && defined(NDEBUG) && defined(GOOGLE_CHROME_BUILD))
+    // In order to have optimized code for official builds, remove DLOGs and
+// DCHECKs.
+#define OMIT_DLOG_AND_DCHECK 1
+#endif
+
+#ifdef OMIT_DLOG_AND_DCHECK
+
+    #define DLOG(severity) \
+  true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
+
+#define DLOG_IF(severity, condition) \
+  true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
+
+#define DLOG_ASSERT(condition) \
+  true ? (void) 0 : LOG_ASSERT(condition)
+
+enum { DEBUG_MODE = 0 };
+
+// This macro can be followed by a sequence of stream parameters in
+// non-debug mode. The DCHECK and friends macros use this so that
+// the expanded expression DCHECK(foo) << "asdf" is still syntactically
+// valid, even though the expression will get optimized away.
+// In order to avoid variable unused warnings for code that only uses a
+// variable in a CHECK, we make sure to use the macro arguments.
+#define NDEBUG_EAT_STREAM_PARAMETERS \
+  logging::LogMessage(__FILE__, __LINE__).stream()
+
+#define DCHECK(condition) \
+  while (false && (condition)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_EQ(val1, val2) \
+  while (false && (val1) == (val2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_NE(val1, val2) \
+  while (false && (val1) == (val2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_LE(val1, val2) \
+  while (false && (val1) == (val2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_LT(val1, val2) \
+  while (false && (val1) == (val2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_GE(val1, val2) \
+  while (false && (val1) == (val2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_GT(val1, val2) \
+  while (false && (val1) == (val2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_STREQ(str1, str2) \
+  while (false && (str1) == (str2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_STRCASEEQ(str1, str2) \
+  while (false && (str1) == (str2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_STRNE(str1, str2) \
+  while (false && (str1) == (str2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_STRCASENE(str1, str2) \
+  while (false && (str1) == (str2)) NDEBUG_EAT_STREAM_PARAMETERS
+
+#else  // OMIT_DLOG_AND_DCHECK
+
 #ifndef NDEBUG
+// On a regular debug build, we want to have DCHECKS and DLOGS enabled.
 
 #define DLOG(severity) LOG(severity)
 #define DLOG_IF(severity, condition) LOG_IF(severity, condition)
 #define DLOG_ASSERT(condition) LOG_ASSERT(condition)
 
 // debug-only checking.  not executed in NDEBUG mode.
-enum { DEBUG_MODE = 1 };
-#define DCHECK(condition) CHECK(condition)
+    enum { DEBUG_MODE = 1 };
+#define DCHECK(condition) \
+  LOG_IF(FATAL, !(condition)) << "Check failed: " #condition ". "
 
-#else // NDEBUG
+// Helper macro for binary operators.
+// Don't use this macro directly in your code, use DCHECK_EQ et al below.
+#define DCHECK_OP(name, op, val1, val2)  \
+  if (logging::CheckOpString _result = \
+      logging::Check##name##Impl((val1), (val2), #val1 " " #op " " #val2)) \
+    logging::LogMessage(__FILE__, __LINE__, _result).stream()
 
+// Helper functions for string comparisons.
+// To avoid bloat, the definitions are in logging.cc.
+#define DECLARE_DCHECK_STROP_IMPL(func, expected) \
+  std::string* Check##func##expected##Impl(const char* s1, \
+                                           const char* s2, \
+                                           const char* names);
+    DECLARE_DCHECK_STROP_IMPL(strcmp, true)
+    DECLARE_DCHECK_STROP_IMPL(strcmp, false)
+    DECLARE_DCHECK_STROP_IMPL(_stricmp, true)
+    DECLARE_DCHECK_STROP_IMPL(_stricmp, false)
+#undef DECLARE_DCHECK_STROP_IMPL
+
+// Helper macro for string comparisons.
+// Don't use this macro directly in your code, use CHECK_STREQ et al below.
+#define DCHECK_STROP(func, op, expected, s1, s2) \
+  while (CheckOpString _result = \
+      logging::Check##func##expected##Impl((s1), (s2), \
+                                           #s1 " " #op " " #s2)) \
+    LOG(FATAL) << *_result.str_
+
+// String (char*) equality/inequality checks.
+// CASE versions are case-insensitive.
+//
+// Note that "s1" and "s2" may be temporary strings which are destroyed
+// by the compiler at the end of the current "full expression"
+// (e.g. DCHECK_STREQ(Foo().c_str(), Bar().c_str())).
+
+#define DCHECK_STREQ(s1, s2) DCHECK_STROP(strcmp, ==, true, s1, s2)
+#define DCHECK_STRNE(s1, s2) DCHECK_STROP(strcmp, !=, false, s1, s2)
+#define DCHECK_STRCASEEQ(s1, s2) DCHECK_STROP(_stricmp, ==, true, s1, s2)
+#define DCHECK_STRCASENE(s1, s2) DCHECK_STROP(_stricmp, !=, false, s1, s2)
+
+#define DCHECK_INDEX(I,A) DCHECK(I < (sizeof(A)/sizeof(A[0])))
+#define DCHECK_BOUND(B,A) DCHECK(B <= (sizeof(A)/sizeof(A[0])))
+
+#else  // NDEBUG
+    // On a regular release build we want to be able to enable DCHECKS through the
+// command line.
 #define DLOG(severity) \
-    true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
+  true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
 
 #define DLOG_IF(severity, condition) \
-    true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
+  true ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
 
 #define DLOG_ASSERT(condition) \
-    true ? (void) 0 : LOG_ASSERT(condition) 
+  true ? (void) 0 : LOG_ASSERT(condition)
 
 enum { DEBUG_MODE = 0 };
-#define DCHECK(condition) \
-    true ? (void) 0 : CHECK(condition)
 
-#endif // NDEBUG
+// This macro can be followed by a sequence of stream parameters in
+// non-debug mode. The DCHECK and friends macros use this so that
+// the expanded expression DCHECK(foo) << "asdf" is still syntactically
+// valid, even though the expression will get optimized away.
+#define NDEBUG_EAT_STREAM_PARAMETERS \
+  logging::LogMessage(__FILE__, __LINE__).stream()
+
+// Set to true in InitLogging when we want to enable the dchecks in release.
+extern bool g_enable_dcheck;
+#define DCHECK(condition) \
+    !logging::g_enable_dcheck ? void (0) : \
+        LOG_IF(ERROR_REPORT, !(condition)) << "Check failed: " #condition ". "
+
+// Helper macro for binary operators.
+// Don't use this macro directly in your code, use DCHECK_EQ et al below.
+#define DCHECK_OP(name, op, val1, val2)  \
+  if (logging::g_enable_dcheck) \
+    if (logging::CheckOpString _result = \
+        logging::Check##name##Impl((val1), (val2), #val1 " " #op " " #val2)) \
+      logging::LogMessage(__FILE__, __LINE__, logging::LOG_ERROR_REPORT, \
+                          _result).stream()
+
+#define DCHECK_STREQ(str1, str2) \
+  while (false) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_STRCASEEQ(str1, str2) \
+  while (false) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_STRNE(str1, str2) \
+  while (false) NDEBUG_EAT_STREAM_PARAMETERS
+
+#define DCHECK_STRCASENE(str1, str2) \
+  while (false) NDEBUG_EAT_STREAM_PARAMETERS
+
+#endif  // NDEBUG
+
+// Helper functions for DCHECK_OP macro.
+// The (int, int) specialization works around the issue that the compiler
+// will not instantiate the template version of the function on values of
+// unnamed enum type - see comment below.
+#define DEFINE_DCHECK_OP_IMPL(name, op) \
+  template <class t1, class t2> \
+  inline std::string* Check##name##Impl(const t1& v1, const t2& v2, \
+                                        const char* names) { \
+    if (v1 op v2) return NULL; \
+    else return MakeCheckOpString(v1, v2, names); \
+  } \
+  inline std::string* Check##name##Impl(int v1, int v2, const char* names) { \
+    if (v1 op v2) return NULL; \
+    else return MakeCheckOpString(v1, v2, names); \
+  }
+    DEFINE_DCHECK_OP_IMPL(EQ, ==)
+    DEFINE_DCHECK_OP_IMPL(NE, !=)
+    DEFINE_DCHECK_OP_IMPL(LE, <=)
+    DEFINE_DCHECK_OP_IMPL(LT, < )
+    DEFINE_DCHECK_OP_IMPL(GE, >=)
+    DEFINE_DCHECK_OP_IMPL(GT, > )
+#undef DEFINE_DCHECK_OP_IMPL
+
+// Equality/Inequality checks - compare two values, and log a LOG_FATAL message
+// including the two values when the result is not as expected.  The values
+// must have operator<<(ostream, ...) defined.
+//
+// You may append to the error message like so:
+//   DCHECK_NE(1, 2) << ": The world must be ending!";
+//
+// We are very careful to ensure that each argument is evaluated exactly
+// once, and that anything which is legal to pass as a function argument is
+// legal here.  In particular, the arguments may be temporary expressions
+// which will end up being destroyed at the end of the apparent statement,
+// for example:
+//   DCHECK_EQ(string("abc")[1], 'b');
+//
+// WARNING: These may not compile correctly if one of the arguments is a pointer
+// and the other is NULL. To work around this, simply static_cast NULL to the
+// type of the desired pointer.
+
+#define DCHECK_EQ(val1, val2) DCHECK_OP(EQ, ==, val1, val2)
+#define DCHECK_NE(val1, val2) DCHECK_OP(NE, !=, val1, val2)
+#define DCHECK_LE(val1, val2) DCHECK_OP(LE, <=, val1, val2)
+#define DCHECK_LT(val1, val2) DCHECK_OP(LT, < , val1, val2)
+#define DCHECK_GE(val1, val2) DCHECK_OP(GE, >=, val1, val2)
+#define DCHECK_GT(val1, val2) DCHECK_OP(GT, > , val1, val2)
+
+#endif  // OMIT_DLOG_AND_DCHECK
+#undef OMIT_DLOG_AND_DCHECK
+
 
 #define NOTREACHED() DCHECK(false)
 

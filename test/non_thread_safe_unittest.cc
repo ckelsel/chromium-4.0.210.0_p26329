@@ -16,8 +16,8 @@
 #include "base/non_thread_safe.h"
 #include "base/logging.h"
 
-class MyClass : public base::NonThreadSafe
-              , public base::PlatformThread::Delegate
+class MyClass : public NonThreadSafe
+              , public PlatformThread::Delegate
 {
     
     void ThreadMain()
@@ -38,11 +38,11 @@ TEST(non_thread_safe, same_thread)
 TEST(non_thread_safe, different_thread)
 {
     MyClass *test = new MyClass();
-    base::PlatformThreadHandle thread_handle;
+    PlatformThreadHandle thread_handle;
 
-    bool success = base::PlatformThread::Create(0, test, &thread_handle);
+    bool success = PlatformThread::Create(0, test, &thread_handle);
     ASSERT_TRUE(success);
-    base::PlatformThread::Join(thread_handle);
+    PlatformThread::Join(thread_handle);
 
     delete test;
 }

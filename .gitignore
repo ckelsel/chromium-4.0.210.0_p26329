@@ -1,6 +1,8 @@
 build
 build_
 
+.idea
+
 # Compiled Object files
 *.slo
 *.lo
