@@ -1,12 +1,18 @@
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.1)
 set(PROJECT_NAME_STR chromium)
 project(${PROJECT_NAME_STR} C CXX)
 
+# LINUX and APPLE
+if(UNIX AND NOT APPLE)
+    SET(LINUX TRUE)
+endif()
+
 find_package(Threads REQUIRED)
 
-
 if(CMAKE_COMPILER_IS_GNUCXX)
-    add_definitions(-Wall -ansi -Wno-deprecated -pthread)
+    INCLUDE(FindPkgConfig)
+    pkg_check_modules (GTK gtk+-2.0)
+    pkg_check_modules (NSS nss)
 endif()
 
 if(MSVC)
@@ -16,7 +22,10 @@ if(MSVC)
     #set(COMMON_CXX_FLAGS "/W4 /WX /EHsc")
     ADD_DEFINITIONS(-D_WIN32_WINNT=0x6000 -DUNICODE -D_UNICODE -DNOMINMAX)
 else()
-    set(COMMON_CXX_FLAGS "-Wall -Werror")
+    set(COMMON_CXX_FLAGS "-Wall")
+    #set(COMMON_CXX_FLAGS "-Wall -Werror")
+    #locally defined but not used [-Wunused-local-typedefs]
+    #set(COMMON_CXX_FLAGS ${COMMON_CXX_FLAGS} "-Wunused-local-typedefs")
 endif() 
 set(CMAKE_CXX_FLAGS ${COMMON_CXX_FLAGS})
 
@@ -25,6 +34,11 @@ set(CMAKE_CXX_FLAGS ${COMMON_CXX_FLAGS})
 #-------------------
 set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR})
 set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
+
+if(NOT WIN32)
+    set(COMMON_INCLUDES ${COMMON_INCLUDES} ${GTK_INCLUDE_DIRS})
+    set(COMMON_INCLUDES ${COMMON_INCLUDES} ${NSS_INCLUDE_DIRS})
+endif()
 
 #-------------------
 # Module source

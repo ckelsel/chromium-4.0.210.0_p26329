@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sys/stat.h>
 
 #include "base/logging.h"

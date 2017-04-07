@@ -14,6 +14,8 @@
 #include <windows.h>
 #elif defined(OS_POSIX)
 #include <sys/stat.h>
+#include <unistd.h>
+#include <sys/types.h>
 #endif
 
 #include <stdio.h>
