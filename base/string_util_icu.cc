@@ -655,7 +655,7 @@ std::wstring FormatNumber(int64 number) {
     return StringPrintf(L"%lld", number);
   }
   icu::UnicodeString ustr;
-  number_format->format(number, ustr);
+  number_format->format((int64_t)number, ustr);
 
 #if defined(WCHAR_T_IS_UTF16)
   return std::wstring(ustr.getBuffer(),

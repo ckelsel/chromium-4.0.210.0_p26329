@@ -38,6 +38,8 @@ set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
 if(NOT WIN32)
     set(COMMON_INCLUDES ${COMMON_INCLUDES} ${GTK_INCLUDE_DIRS})
     set(COMMON_INCLUDES ${COMMON_INCLUDES} ${NSS_INCLUDE_DIRS})
+    set(COMMON_INCLUDES ${COMMON_INCLUDES} ${PROJECT_SOURCE_DIR}/base/third_party/icu/public/common)
+    set(COMMON_INCLUDES ${COMMON_INCLUDES} ${PROJECT_SOURCE_DIR}/base/third_party/icu/public/i18n)
 endif()
 
 #-------------------

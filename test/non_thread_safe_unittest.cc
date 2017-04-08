@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "gtest/gtest.h"
 #include "base/non_thread_safe.h"
 #include "base/logging.h"
@@ -19,7 +20,6 @@
 class MyClass : public NonThreadSafe
               , public PlatformThread::Delegate
 {
-    
     void ThreadMain()
     {
         ASSERT_FALSE(CalledOnValidThread());
@@ -48,4 +48,3 @@ TEST(non_thread_safe, different_thread)
 
     delete test;
 }
-

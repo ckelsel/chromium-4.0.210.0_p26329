@@ -6,6 +6,7 @@
 
 #include <sys/time.h>
 #include <time.h>
+#include <bits/posix_opt.h>
 
 #include <limits>
 
