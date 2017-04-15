@@ -45,6 +45,8 @@ endif()
 #-------------------
 # Module source
 #-------------------
+add_subdirectory(${EXT_PROJECTS_DIR}/icu)
+
 add_subdirectory(${PROJECT_SOURCE_DIR}/base)
 
 #-------------------
