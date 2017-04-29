@@ -52,8 +52,12 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/base)
 #-------------------
 # Test
 #-------------------
-add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
+
+if(MSVC)
 add_definitions(${MSVC_COMPILER_DEFS})
+endif(MSVC)
+
+add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
 enable_testing()
 set(PROJECT_TEST_NAME ${PROJECT_LIB_NAME}_test)
 include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
