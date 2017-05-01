@@ -49,6 +49,38 @@ private:
     base::WaitableEvent *event_;
 };
 
+
+class SeqRunner : public base::DelegateSimpleThread::Delegate {
+public:
+    SeqRunner(base::AtomicSequenceNumber *seq) : seq_(seq) { }
+
+    virtual void Run() {
+        seq_->GetNext();
+    }
+
+private:
+    base::AtomicSequenceNumber *seq_;
+};
+
+class VerifyPoolRunner : public base::DelegateSimpleThread::Delegate {
+public:
+    VerifyPoolRunner(base::AtomicSequenceNumber *seq,
+                     int total, base::WaitableEvent *event)
+        : seq_(seq), total_(total), event_(event) {}
+
+    virtual void Run() {
+        if (seq_->GetNext() == total_) {
+            event_->Signal();
+        } else {
+            event_->Wait();
+        }
+    }
+
+private:
+    base::AtomicSequenceNumber *seq_;
+    int total_;
+    base::WaitableEvent *event_;
+};
 } // namespace
 
 TEST(SimpleThreadTest, CreateAndJoin) {
@@ -72,8 +104,7 @@ TEST(SimpleThreadTest, CreateAndJoin) {
     EXPECT_EQ(2, stack_int);
 }
 
-TEST(SimpleThreadTest, WaitForEvent)
-{
+TEST(SimpleThreadTest, WaitForEvent) {
     base::WaitableEvent event(true, false);
 
     WaitEventRunner runner(&event);
@@ -91,4 +122,27 @@ TEST(SimpleThreadTest, WaitForEvent)
 
     thread.Join();
     EXPECT_TRUE(thread.HasBeenJoined());
+}
+
+TEST(SimpleThreadTest, NamedWithOpitions) {
+    base::WaitableEvent event(true, false);
+
+    WaitEventRunner runner(&event);
+    base::SimpleThread::Options options;
+    base::DelegateSimpleThread thread(&runner, "event_waiter", options);
+    EXPECT_EQ(thread.name_prefix(), "event_waiter");
+    EXPECT_FALSE(event.IsSignaled());
+
+    thread.Start();
+    EXPECT_EQ(thread.name_prefix(), "event_waiter");
+    EXPECT_EQ(thread.name(), std::string("event_waiter/" +
+                                         IntToString(thread.tid())));
+    event.Wait();
+
+    EXPECT_TRUE(event.IsSignaled());
+    thread.Join();
+
+    EXPECT_EQ(thread.name_prefix(), "event_waiter");
+    EXPECT_EQ(thread.name(), std::string("event_waiter/" +
+                                         IntToString(thread.tid())));
 }
