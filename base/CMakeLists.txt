@@ -63,6 +63,8 @@ else()
     set(SRC_FILES ${SRC_FILES} idle_timer.cc)
 endif()
 
+
+
 if(UNIX)
     set(SRC_FILES ${SRC_FILES} file_util_icu.cc)
     set(SRC_FILES ${SRC_FILES} file_util_posix.cc)
@@ -114,6 +116,9 @@ else()
     set(SRC_FILES ${SRC_FILES} base_drag_source.cc)
     set(SRC_FILES ${SRC_FILES} base_drop_target.cc)
     set(SRC_FILES ${SRC_FILES} base_paths_win.cc)
+    set(SRC_FILES ${SRC_FILES} crypto/rsa_private_key_win.cc)
+    set(SRC_FILES ${SRC_FILES} crypto/signature_creator_win.cc)
+    set(SRC_FILES ${SRC_FILES} crypto/signature_verifier_win.cc)
     set(SRC_FILES ${SRC_FILES} clipboard_util.cc)
     set(SRC_FILES ${SRC_FILES} clipboard_win.cc)
     set(SRC_FILES ${SRC_FILES} condition_variable_win.cc)
