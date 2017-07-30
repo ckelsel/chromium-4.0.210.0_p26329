@@ -2,7 +2,7 @@ language: c++
 sudo: enabled
 dist: trusty
 
-before_install: sudo apt-get install cmake
+before_install: sudo apt-get install cmake libgtk2.0-dev
 install: true
 script: ./build.sh
 
