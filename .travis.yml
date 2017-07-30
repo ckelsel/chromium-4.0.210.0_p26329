@@ -1,7 +1,8 @@
 language: c++
-sudo: false
+sudo: enabled
 dist: trusty
 
+before_install: sudo apt-get cmake
 install: true
-script: build.sh
+script: ./build.sh
 
