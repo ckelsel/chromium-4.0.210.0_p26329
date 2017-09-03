@@ -22,7 +22,9 @@ class MyClass : public NonThreadSafe
 {
     void ThreadMain()
     {
+#ifndef NDEBUG
         ASSERT_FALSE(CalledOnValidThread());
+#endif
     }
 };
 

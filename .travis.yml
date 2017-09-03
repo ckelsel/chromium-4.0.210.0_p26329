@@ -19,7 +19,8 @@ jobs:
       # dependencies in a separate cache.
       compiler: gcc-5 -m32
 
-script: ./build.sh
+# Debug build
+script: ./build.sh -d
 
 addons:
   apt:
