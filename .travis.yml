@@ -5,7 +5,7 @@ language: c++
 sudo: enabled
 dist: trusty
 
-# jobs
+# Jobs
 jobs:
   include:
     - stage: normal build
@@ -19,8 +19,6 @@ jobs:
       # dependencies in a separate cache.
       compiler: gcc-5 -m32
 
-before_install: sudo apt-get install cmake libgtk2.0-dev
-install: true
 script: ./build.sh
 
 addons:
@@ -46,4 +44,5 @@ addons:
       - libtool
       - llvm-4.0-dev
       - pkg-config
+      - libgtk2.0-dev
 
