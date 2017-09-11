@@ -25,18 +25,15 @@ target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_LIB_NAME}
 #
 # ipc test
 #
-set(PROJECT_IPC_TEST_NAME ${PROJECT_IPC_LIB_NAME}_ipc_tests)
-add_executable(${PROJECT_IPC_TEST_NAME} ipc_tests.cc ${TEST_COMMON_SRC_FILES})
-target_link_libraries(${PROJECT_IPC_TEST_NAME} ${PROJECT_LIB_NAME}
-    ${PROJECT_IPC_LIB_NAME})
+if(WIN32)
+    set(PROJECT_IPC_TEST_NAME ${PROJECT_IPC_LIB_NAME}_ipc_tests)
+    add_executable(${PROJECT_IPC_TEST_NAME} ipc_tests.cc ${TEST_COMMON_SRC_FILES})
+    target_link_libraries(${PROJECT_IPC_TEST_NAME} ${PROJECT_LIB_NAME}
+        ${PROJECT_IPC_LIB_NAME})
+endif()
 
 if(NOT WIN32)
     target_link_libraries(${PROJECT_TEST_NAME}
-        ${GTEST_LIBS_DIR}/libgtest.a
-        ${GTEST_LIBS_DIR}/libgtest_main.a
-        )
-
-    target_link_libraries(${PROJECT_IPC_TEST_NAME}
         ${GTEST_LIBS_DIR}/libgtest.a
         ${GTEST_LIBS_DIR}/libgtest_main.a
         )
@@ -61,6 +58,9 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_TEST_NAME} ${CMAKE_THREAD_LIBS_INIT})
-
 add_test(test0 ${PROJECT_TEST_NAME})
-add_test(test1 ${PROJECT_IPC_TEST_NAME})
+
+if(WIN32)
+    target_link_libraries(${PROJECT_IPC_TEST_NAME} ${CMAKE_THREAD_LIBS_INIT})
+    add_test(test1 ${PROJECT_IPC_TEST_NAME})
+endif()

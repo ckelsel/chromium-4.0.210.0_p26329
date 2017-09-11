@@ -9,7 +9,7 @@ endif()
 
 find_package(Threads REQUIRED)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if(LINUX)
     INCLUDE(FindPkgConfig)
     pkg_check_modules (GTK gtk+-2.0)
     #pkg_check_modules (NSS nss)
