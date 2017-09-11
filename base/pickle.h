@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string16.h"
-#include "ext/gtest/googletest/googletest/include/gtest/gtest_prod.h"
+#include GTEST_PROD_H
 
 // This class provides facilities for basic binary value packing and unpacking.
 //
