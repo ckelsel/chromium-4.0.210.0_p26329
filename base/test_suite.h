@@ -176,7 +176,9 @@ class TestSuite {
     }
 #endif  // defined(OS_WIN)
 
+#ifndef OS_WIN
     icu_util::Initialize();
+#endif // OS_WIN
   }
 
   virtual void Shutdown() {
