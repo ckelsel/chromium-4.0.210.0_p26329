@@ -1,4 +1,3 @@
-set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_base_impl)
 
 include_directories(${COMMON_INCLUDES})
 

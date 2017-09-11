@@ -16,7 +16,7 @@
 #include "gtest/gtest.h"
 #include "base/sys_info.h"
 
-#include "test/platform_test.h"
+#include "testing/platform_test.h"
 
 typedef PlatformTest SysInfoTest;
 

@@ -47,7 +47,11 @@ endif()
 #-------------------
 add_subdirectory(${EXT_PROJECTS_DIR}/icu)
 
+set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_base_impl)
 add_subdirectory(${PROJECT_SOURCE_DIR}/base)
+
+set(PROJECT_IPC_LIB_NAME ${PROJECT_NAME_STR}_ipc_impl)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ipc)
 
 #-------------------
 # Test
@@ -57,33 +61,7 @@ if(MSVC)
 add_definitions(${MSVC_COMPILER_DEFS})
 endif(MSVC)
 
-add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
 enable_testing()
-set(PROJECT_TEST_NAME ${PROJECT_LIB_NAME}_test)
-include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
 
-file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cc)
-add_executable(${PROJECT_TEST_NAME} ${TEST_SRC_FILES})
-add_dependencies(${PROJECT_TEST_NAME} googletest)
-target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_NAME_STR}_base_impl)
-
-
-if(NOT WIN32)
-    target_link_libraries(${PROJECT_TEST_NAME}
-        ${GTEST_LIBS_DIR}/libgtest.a
-        ${GTEST_LIBS_DIR}/libgtest_main.a
-        )
-else()
-    target_link_libraries(${PROJECT_TEST_NAME}
-        debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
-        optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
-        )
-    target_link_libraries(${PROJECT_TEST_NAME}
-        debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
-        optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
-        )
-endif()
-
-target_link_libraries(${PROJECT_TEST_NAME} ${CMAKE_THREAD_LIBS_INIT})
-
-add_test(test1 ${PROJECT_TEST_NAME})
+add_subdirectory(${EXT_PROJECTS_DIR}/gtest)
+add_subdirectory(${PROJECT_SOURCE_DIR}/testing)

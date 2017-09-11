@@ -10,9 +10,8 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include GTEST_H
-#error aaa
-#include "test/multiprocess_func_list.h"
-#include "test/platform_test.h"
+#include "testing/multiprocess_func_list.h"
+#include "testing/platform_test.h"
 
 #if defined(OS_POSIX)
 #include <sys/types.h>
