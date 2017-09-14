@@ -6,8 +6,13 @@ include_directories(${PROJECT_SOURCE_DIR}/third_party/icu/public/common)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/icu/public/i18n)
 
 add_definitions(-UENABLE_GRIT)
+
 if (WIN32)
     add_definitions(/D_WINSOCKAPI_)
+else (WIN32)
+    add_definitions(-D_X86_=1)
+    include_directories(${PROJECT_SOURCE_DIR}/third_party/npapi/npspy/extern/nspr)
+    include_directories(${PROJECT_SOURCE_DIR}/third_party/npapi)
 endif(WIN32)
 
 set(SRC_FILES base/address_list.cc)

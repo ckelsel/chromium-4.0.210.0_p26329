@@ -36,15 +36,15 @@
 #define nspr_cpucfg___
 
 #ifndef XP_PC
-#define XP_PC
+//#define XP_PC
 #endif
 
 #ifndef WIN32
-#define WIN32
+//#define WIN32
 #endif
 
 #ifndef WIN95
-#define WIN95
+//#define WIN95
 #endif
 
 #define PR_AF_INET6 23  /* same as AF_INET6 */

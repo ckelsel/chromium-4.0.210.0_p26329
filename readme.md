@@ -9,5 +9,8 @@ build.bat
 
 # centos build
 yum groupinstall "Development Tools"
-yum install gtk+-devel
+yum install gtk+-devel nss-util-devel
+
 wget https://cmake.org/files/v3.8/cmake-3.8.2-Linux-x86_64.tar.gz
+tar -xf cmake-3.8.2-Linux-x86_64.tar.gz
+cp cmake-3.8.2-Linux-x86_64/* /usr -a

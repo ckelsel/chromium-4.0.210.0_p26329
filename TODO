@@ -1,2 +1,20 @@
 1. UTF8ToUTF16 not support on Windows which need icu
 2. net_util.cc disable GetDirectoryListingHeader
+3. third_party/npapi/npspy/extern/nspr/prcpucfg.h
+
+remove define XP_PC WIN32 WIN95
+
+#ifndef XP_PC
+//#define XP_PC
+#endif
+
+#ifndef WIN32
+//#define WIN32
+#endif
+
+#ifndef WIN95
+//#define WIN95                                                                                                                                                        
+#endif
+
+4. net/base/cert_verifier.cc
++ #include <bindings/npapi.h>

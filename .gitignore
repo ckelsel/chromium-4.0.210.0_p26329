@@ -41,3 +41,7 @@ cmake-build-*
 fb.bat
 fd.bat
 dbuild.bat
+
+fb.sh
+fd.sh
+dbuild.sh

@@ -5,6 +5,7 @@
 #include "net/base/cert_verifier.h"
 
 #if defined(OS_LINUX)
+#include <bindings/npapi.h>
 #include <private/pprthred.h>  // PR_DetatchThread
 #endif
 
