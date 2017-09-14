@@ -4,12 +4,12 @@ project(${PROJECT_NAME_STR} C CXX)
 
 # LINUX and APPLE
 if(UNIX AND NOT APPLE)
-    SET(LINUX TRUE)
+    set(LINUX TRUE)
 endif()
 
 find_package(Threads REQUIRED)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if(LINUX)
     INCLUDE(FindPkgConfig)
     pkg_check_modules (GTK gtk+-2.0)
     #pkg_check_modules (NSS nss)
@@ -61,7 +61,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/net)
 #-------------------
 
 if(MSVC)
-add_definitions(${MSVC_COMPILER_DEFS})
+    add_definitions(${MSVC_COMPILER_DEFS})
 endif(MSVC)
 
 enable_testing()
