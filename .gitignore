@@ -37,3 +37,7 @@ build_
 *.swp
 
 cmake-build-*
+
+fb.bat
+fd.bat
+dbuild.bat

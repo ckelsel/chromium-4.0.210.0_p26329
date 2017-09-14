@@ -38,20 +38,23 @@ set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
 if(NOT WIN32)
     set(COMMON_INCLUDES ${COMMON_INCLUDES} ${GTK_INCLUDE_DIRS})
     set(COMMON_INCLUDES ${COMMON_INCLUDES} ${NSS_INCLUDE_DIRS})
-    set(COMMON_INCLUDES ${COMMON_INCLUDES} ${PROJECT_SOURCE_DIR}/ext/icu/public/common)
-    set(COMMON_INCLUDES ${COMMON_INCLUDES} ${PROJECT_SOURCE_DIR}/ext/icu/public/i18n)
+    set(COMMON_INCLUDES ${COMMON_INCLUDES} ${PROJECT_SOURCE_DIR}/third_party/icu/public/common)
+    set(COMMON_INCLUDES ${COMMON_INCLUDES} ${PROJECT_SOURCE_DIR}/third_party/icu/public/i18n)
 endif()
 
 #-------------------
 # Module source
 #-------------------
-add_subdirectory(${EXT_PROJECTS_DIR}/icu)
+add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/icu)
 
 set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_base_impl)
 add_subdirectory(${PROJECT_SOURCE_DIR}/base)
 
 set(PROJECT_IPC_LIB_NAME ${PROJECT_NAME_STR}_ipc_impl)
 add_subdirectory(${PROJECT_SOURCE_DIR}/ipc)
+
+set(PROJECT_NET_LIB_NAME ${PROJECT_NAME_STR}_net_impl)
+add_subdirectory(${PROJECT_SOURCE_DIR}/net)
 
 #-------------------
 # Test
