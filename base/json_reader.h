@@ -34,7 +34,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include GTEST_PROD_H
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Value;
 

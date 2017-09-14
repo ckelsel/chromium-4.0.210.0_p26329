@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include GTEST_H
+#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 #include "testing/platform_test.h"
 

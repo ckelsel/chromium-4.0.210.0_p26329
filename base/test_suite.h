@@ -20,7 +20,7 @@
 #include "base/multiprocess_test.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/time.h"
-#include GTEST_H
+#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_WIN)
