@@ -5,7 +5,7 @@ include_directories(${PROJECT_SOURCE_DIR}/sdch/open-vcdiff/src)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/icu/public/common)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/icu/public/i18n)
 
-add_definitions(/UENABLE_GRIT)
+add_definitions(-UENABLE_GRIT)
 if (WIN32)
     add_definitions(/D_WINSOCKAPI_)
 endif(WIN32)
