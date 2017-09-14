@@ -9,7 +9,7 @@
 #if defined(OS_WIN)
 #include "net/socket/ssl_client_socket_win.h"
 #elif defined(OS_LINUX)
-#include "net/socket/ssl_client_socket_nss.h"
+//#include "net/socket/ssl_client_socket_nss.h"
 #elif defined(OS_MACOSX)
 #include "net/socket/ssl_client_socket_mac.h"
 #endif
@@ -31,7 +31,9 @@ class DefaultClientSocketFactory : public ClientSocketFactory {
 #if defined(OS_WIN)
     return new SSLClientSocketWin(transport_socket, hostname, ssl_config);
 #elif defined(OS_LINUX)
-    return new SSLClientSocketNSS(transport_socket, hostname, ssl_config);
+    LOG_ASSERT(FALSE);
+    return NULL;
+    //return new SSLClientSocketNSS(transport_socket, hostname, ssl_config);
 #elif defined(OS_MACOSX)
     return new SSLClientSocketMac(transport_socket, hostname, ssl_config);
 #else

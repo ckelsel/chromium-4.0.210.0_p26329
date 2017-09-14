@@ -18,3 +18,18 @@ remove define XP_PC WIN32 WIN95
 
 4. net/base/cert_verifier.cc
 + #include <bindings/npapi.h>
+
+5. pkg-config pc path (CentOS 7)
+/usr/lib64/pkgconfig
+
+5. nss
+Network Security Services Utilities
+
+6. nspr
+Netscape Portable Runtime
+
+7. yum download rpms location
+/var/cache/yum/x86_64/7/updates/packages
+
+8. net/socket/client_socket_factory.cc
+disable SSLClient
