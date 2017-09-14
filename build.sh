@@ -14,4 +14,9 @@ cp build_config.h $OUT
 cd $OUT
 cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
 cmake --build .
+if [ $? != 0 ] ; then
+    echo "Build failed!"
+    exit 1
+fi
 ctest -VV
+
