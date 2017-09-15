@@ -1,0 +1,26 @@
+Microsoft (R) COFF/PE Dumper Version 10.00.30319.01
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file icudt42.dll
+
+File Type: DLL
+
+  Section contains the following exports for icudt42.dll
+
+    00000000 characteristics
+    4AA6A38A time date stamp Wed Sep 09 02:33:46 2009
+        0.00 version
+           1 ordinal base
+           1 number of functions
+           1 number of names
+
+    ordinal hint RVA      name
+
+          1    0 00001000 icudt42_dat
+
+  Summary
+
+      A62000 .rdata
+        1000 .reloc
+        1000 .rsrc
