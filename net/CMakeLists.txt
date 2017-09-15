@@ -2,8 +2,6 @@
 include_directories(${COMMON_INCLUDES})
 
 include_directories(${PROJECT_SOURCE_DIR}/sdch/open-vcdiff/src)
-include_directories(${PROJECT_SOURCE_DIR}/third_party/icu/public/common)
-include_directories(${PROJECT_SOURCE_DIR}/third_party/icu/public/i18n)
 
 add_definitions(-UENABLE_GRIT)
 
