@@ -49,6 +49,8 @@ endif()
 #-------------------
 # Module source
 #-------------------
+add_subdirectory(${PROJECT_SOURCE_DIR}/googleurl)
+
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/icu)
 
 set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_base_impl)

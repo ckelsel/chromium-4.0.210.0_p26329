@@ -16,11 +16,21 @@ set(TEST_SRC_FILES ${TEST_SRC_FILES} non_thread_safe_unittest.cc)
 set(TEST_SRC_FILES ${TEST_SRC_FILES} scoped_ptr_unittest.cc)
 set(TEST_SRC_FILES ${TEST_SRC_FILES} simple_thread_unittest.cc)
 set(TEST_SRC_FILES ${TEST_SRC_FILES} sys_info_unittest.cc)
+set(TEST_SRC_FILES ${TEST_SRC_FILES} ../net/socket/tcp_client_socket_unittest.cc)
+
+if(WIN32)
+set(EXT_LIBS ${EXT_LIBS} ws2_32)
+else(WIN32)
+endif(WIN32)
+
+set(EXT_LIBS ${EXT_LIBS} gurl)
+
+message("EXT_LIBS: ${EXT_LIBS}")
 
 add_executable(${PROJECT_TEST_NAME} ${TEST_SRC_FILES} ${TEST_COMMON_SRC_FILES})
 add_dependencies(${PROJECT_TEST_NAME} googletest)
 target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_LIB_NAME}
-    ${PROJECT_IPC_LIB_NAME})
+    ${PROJECT_IPC_LIB_NAME} ${PROJECT_NET_LIB_NAME} ${EXT_LIBS})
 
 #
 # ipc test

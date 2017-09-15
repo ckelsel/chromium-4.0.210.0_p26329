@@ -178,6 +178,5 @@ else(UNIX)
     set(SRC_FILES ${SRC_FILES} url_request/url_request_ftp_job.cc)
 endif(UNIX)
 
-
 add_library(${PROJECT_NET_LIB_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NET_LIB_NAME} ${EXT_LIBS})
