@@ -44,12 +44,17 @@ if(NOT WIN32)
     set(COMMON_INCLUDES ${COMMON_INCLUDES} ${GCONF_INCLUDE_DIRS})
     set(COMMON_INCLUDES ${COMMON_INCLUDES} ${PROJECT_SOURCE_DIR}/third_party/icu/public/common)
     set(COMMON_INCLUDES ${COMMON_INCLUDES} ${PROJECT_SOURCE_DIR}/third_party/icu/public/i18n)
-endif()
+else(NOT WIN32)
+    set(COMMON_INCLUDES ${COMMON_INCLUDES}
+        ${PROJECT_SOURCE_DIR}/third_party/icu/include)
+endif(NOT WIN32)
 
 #-------------------
 # Module source
 #-------------------
 add_subdirectory(${PROJECT_SOURCE_DIR}/googleurl)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/modp_b64)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/icu)
 

@@ -1,4 +1,3 @@
-
 include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES})
 
 #
@@ -19,11 +18,28 @@ set(TEST_SRC_FILES ${TEST_SRC_FILES} sys_info_unittest.cc)
 set(TEST_SRC_FILES ${TEST_SRC_FILES} ../net/socket/tcp_client_socket_unittest.cc)
 
 if(WIN32)
-set(EXT_LIBS ${EXT_LIBS} ws2_32)
+    set(EXT_LIBS ${EXT_LIBS} ws2_32)
+    add_library(icuuc SHARED IMPORTED)
+    set_property(TARGET icuuc PROPERTY IMPORTED_LOCATION
+        ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icuuc54.dll)
+    set_property(TARGET icuuc PROPERTY IMPORTED_IMPLIB
+        ${PROJECT_SOURCE_DIR}/third_party/icu/lib/icuuc.lib)
+
+    add_library(icuin SHARED IMPORTED)
+    set_property(TARGET icuin PROPERTY IMPORTED_LOCATION
+        ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icuin54.dll)
+    set_property(TARGET icuin PROPERTY IMPORTED_IMPLIB
+        ${PROJECT_SOURCE_DIR}/third_party/icu/lib/icuin.lib)
+
+    add_library(icudt SHARED IMPORTED)
+    set_property(TARGET icudt PROPERTY IMPORTED_LOCATION
+        ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icudt54.dll)
+    set_property(TARGET icudt PROPERTY IMPORTED_IMPLIB
+        ${PROJECT_SOURCE_DIR}/third_party/icu/lib/icudt.lib)
 else(WIN32)
 endif(WIN32)
 
-set(EXT_LIBS ${EXT_LIBS} gurl)
+set(EXT_LIBS ${EXT_LIBS} gurl icuuc icuin icudt modp_b64)
 
 message("EXT_LIBS: ${EXT_LIBS}")
 
@@ -74,3 +90,7 @@ if(WIN32)
     target_link_libraries(${PROJECT_IPC_TEST_NAME} ${CMAKE_THREAD_LIBS_INIT})
     add_test(test1 ${PROJECT_IPC_TEST_NAME})
 endif()
+
+install (TARGETS ${PROJECT_TEST_NAME} ${PROJECT_IPC_TEST_NAME}
+    DESTINATION bin)
+
