@@ -50,6 +50,8 @@ target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_LIB_NAME}
     ${PROJECT_IPC_LIB_NAME} ${PROJECT_NET_LIB_NAME} ${EXT_LIBS})
 
 if(WIN32)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    
     # Copy to bin
     add_custom_command(TARGET ${PROJECT_TEST_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icuuc54.dll ${CMAKE_BINARY_DIR}/bin
