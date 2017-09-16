@@ -36,6 +36,7 @@ if(WIN32)
         ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icudt54.dll)
     set_property(TARGET icudt PROPERTY IMPORTED_IMPLIB
         ${PROJECT_SOURCE_DIR}/third_party/icu/lib/icudt.lib)
+
 else(WIN32)
 endif(WIN32)
 
@@ -47,6 +48,21 @@ add_executable(${PROJECT_TEST_NAME} ${TEST_SRC_FILES} ${TEST_COMMON_SRC_FILES})
 add_dependencies(${PROJECT_TEST_NAME} googletest)
 target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_LIB_NAME}
     ${PROJECT_IPC_LIB_NAME} ${PROJECT_NET_LIB_NAME} ${EXT_LIBS})
+
+if(WIN32)
+    # Copy to bin
+    add_custom_command(TARGET ${PROJECT_TEST_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icuuc54.dll ${CMAKE_BINARY_DIR}/bin
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icudt54.dll ${CMAKE_BINARY_DIR}/bin
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icuin54.dll ${CMAKE_BINARY_DIR}/bin
+        )
+    # Copy to test
+    add_custom_command(TARGET ${PROJECT_TEST_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icuuc54.dll ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icudt54.dll ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/third_party/icu/bin/icuin54.dll ${CMAKE_CURRENT_BINARY_DIR}
+        )
+endif(WIN32)
 
 #
 # ipc test
@@ -82,6 +98,7 @@ else()
         optimized ${GTEST_LIBS_DIR}/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main${CMAKE_FIND_LIBRARY_SUFFIXES}
         )
 endif()
+
 
 target_link_libraries(${PROJECT_TEST_NAME} ${CMAKE_THREAD_LIBS_INIT})
 add_test(test0 ${PROJECT_TEST_NAME})
