@@ -146,5 +146,5 @@ set(ICUI18N_SRC_FILES ${ICUI18N_SRC_FILES} wintzimpl.cpp)
 set(ICUI18N_SRC_FILES ${ICUI18N_SRC_FILES} zonemeta.cpp)
 set(ICUI18N_SRC_FILES ${ICUI18N_SRC_FILES} zstrfmt.cpp)
 
-add_library(icui18n STATIC ${ICUI18N_SRC_FILES})
-target_link_libraries(icui18n icuuc)
+add_library(icuin STATIC ${ICUI18N_SRC_FILES})
+target_link_libraries(icuin icuuc)

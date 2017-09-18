@@ -1,4 +1,3 @@
-
 include_directories(${COMMON_INCLUDES})
 
 include_directories(${PROJECT_SOURCE_DIR}/sdch/open-vcdiff/src)
@@ -177,4 +176,4 @@ else(UNIX)
 endif(UNIX)
 
 add_library(${PROJECT_NET_LIB_NAME} ${SRC_FILES})
-target_link_libraries(${PROJECT_NET_LIB_NAME} ${EXT_LIBS})
+target_link_libraries(${PROJECT_NET_LIB_NAME} ${PROJECT_LIB_NAME} ${EXT_LIBS})

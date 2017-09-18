@@ -38,6 +38,7 @@ if(WIN32)
         ${PROJECT_SOURCE_DIR}/third_party/icu/lib/icudt.lib)
 
 else(WIN32)
+    set(EXT_LIBS ${EXT_LIBS} libevent)
 endif(WIN32)
 
 set(EXT_LIBS ${EXT_LIBS} gurl icuuc icuin icudt modp_b64)

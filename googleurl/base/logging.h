@@ -4,6 +4,8 @@
 #ifndef BASE_LOGGING_H__
 #define BASE_LOGGING_H__
 
+#ifdef WIN32
+
 #include <string>
 #include <cstring>
 #include <strstream>
@@ -478,5 +480,120 @@ std::ostream& operator<<(std::ostream& out, const wchar_t* wstr);
 inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
   return out << wstr.c_str();
 }
+
+#else // WIN32
+
+#include <string>
+#include <cstring>
+#include <strstream>
+
+#include "base/basictypes.h"
+
+namespace logging {
+
+typedef int LogSeverity;
+const LogSeverity LOG_INFO = 0;
+const LogSeverity LOG_WARNING = 1;
+const LogSeverity LOG_ERROR = 2;
+const LogSeverity LOG_FATAL = 3;
+const LogSeverity LOG_NUM_SEVERITIES = 4;
+
+struct CheckOpString {
+  CheckOpString(std::string* str) : str_(str) { }
+  // No destructor: if str_ is non-NULL, we're about to LOG(FATAL),
+  // so there's no point in cleaning up str_.
+  operator bool() const { return str_ != NULL; }
+  std::string* str_;
+};
+
+// Build the error message string.  This is separate from the "Impl"
+// function template because it is not performance critical and so can
+// be out of line, while the "Impl" code should be inline.
+template<class t1, class t2>
+std::string* MakeCheckOpString(const t1& v1, const t2& v2, const char* names) {
+  std::ostrstream ss;
+  ss << names << " (" << v1 << " vs. " << v2 << ")";
+  return new std::string(ss.str(), ss.pcount());
+}
+
+extern std::string* MakeCheckOpStringIntInt(int v1, int v2, const char* names);
+
+template<int, int>
+std::string* MakeCheckOpString(const int& v1, const int& v2, const char* names) {
+  return MakeCheckOpStringIntInt(v1, v2, names);
+}
+class LogMessage {
+ public:
+  LogMessage(const char* file, int line, LogSeverity severity, int ctr) { }
+
+  // Two special constructors that generate reduced amounts of code at
+  // LOG call sites for common cases.
+  //
+  // Used for LOG(INFO): Implied are:
+  // severity = LOG_INFO, ctr = 0
+  //
+  // Using this constructor instead of the more complex constructor above
+  // saves a couple of bytes per call site.
+  LogMessage(const char* file, int line) { }
+
+  // Used for LOG(severity) where severity != INFO.  Implied
+  // are: ctr = 0
+  //
+  // Using this constructor instead of the more complex constructor above
+  // saves a couple of bytes per call site.
+  LogMessage(const char* file, int line, LogSeverity severity) { }
+
+  // A special constructor used for check failures.
+  // Implied severity = LOG_FATAL
+  LogMessage(const char* file, int line, const CheckOpString& result) { }
+
+  ~LogMessage() { }
+
+  std::ostream& stream() { return stream_; }
+
+ private:
+  void Init(const char* file, int line);
+
+  LogSeverity severity_;
+  std::ostrstream stream_;
+  int message_start_;  // offset of the start of the message (past prefix info).
+
+  DISALLOW_EVIL_CONSTRUCTORS(LogMessage);
+};
+
+#define COMPACT_GOOGLE_LOG_INFO \
+  logging::LogMessage(__FILE__, __LINE__)
+#define COMPACT_GOOGLE_LOG_WARNING \
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_WARNING)
+#define COMPACT_GOOGLE_LOG_ERROR \
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_ERROR)
+#define COMPACT_GOOGLE_LOG_FATAL \
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_FATAL)
+#define COMPACT_GOOGLE_LOG_DFATAL \
+  logging::LogMessage(__FILE__, __LINE__, logging::LOG_DFATAL_LEVEL)
+
+#define LOG(severity) COMPACT_GOOGLE_LOG_ ## severity.stream()
+
+class LogMessageVoidify {
+ public:
+  LogMessageVoidify() { }
+  // This has to be an operator with a precedence lower than << but
+  // higher than ?:
+  void operator&(std::ostream&) { }
+};
+
+#define LOG_IF(severity, condition) \
+  !(condition) ? (void) 0 : logging::LogMessageVoidify() & LOG(severity)
+
+#define DCHECK(condition) \
+  LOG_IF(FATAL, !(condition)) << "Check failed: " #condition ". "
+} // namespace Logging
+
+std::ostream& operator<<(std::ostream& out, const wchar_t* wstr);
+inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
+  return out << wstr.c_str();
+}
+
+#endif // WIN32
 
 #endif  // BASE_LOGGING_H__
