@@ -54,7 +54,9 @@ endif(NOT WIN32)
 #-------------------
 add_subdirectory(${PROJECT_SOURCE_DIR}/googleurl)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/libevent)
+if(NOT WIN32)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/libevent)
+endif(NOT WIN32)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/modp_b64)
 

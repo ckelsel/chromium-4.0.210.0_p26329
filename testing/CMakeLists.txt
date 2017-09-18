@@ -152,13 +152,16 @@ set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/socket/tcp_client_sock
 set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/socket/tcp_pinger_unittest.cc)
 #set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/url_request/url_request_unittest.cc)
 if(WIN32)
-    set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/base/ssl_config_service_win_unittest.cc)
-    set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/base/wininet_util_unittest.cc)
-    set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/proxy/proxy_config_service_win_unittest.cc)
+    #set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/base/ssl_config_service_win_unittest.cc)
+    #set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/base/wininet_util_unittest.cc)
+    #set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/proxy/proxy_config_service_win_unittest.cc)
 else(WIN32)
     #set(PROJECT_NET_TEST_SRCS ${PROJECT_NET_TEST_SRCS} ../net/proxy/proxy_config_service_linux_unittest.cc)
 endif(WIN32)
 
+if (WIN32)
+    add_definitions(/D_WINSOCKAPI_)
+endif (WIN32)
 
 set(PROJECT_NET_TEST_NAME ${PROJECT_NET_LIB_NAME}_net_tests)
 add_executable(${PROJECT_NET_TEST_NAME} ${PROJECT_NET_TEST_SRCS}
