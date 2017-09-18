@@ -12,8 +12,8 @@ rm -rf $OUT
 mkdir $OUT
 cp build_config.h $OUT
 cd $OUT
-cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
-cmake --build .
+cmake -DCMAKE_INSTALL_PREFIX=`pwd` -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
+cmake --build . --target install
 if [ $? != 0 ] ; then
     echo "Build failed!"
     exit 1
