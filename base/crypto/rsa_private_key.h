@@ -1,27 +1,35 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef BASE_CRYPTO_RSA_PRIVATE_KEY_H_
 #define BASE_CRYPTO_RSA_PRIVATE_KEY_H_
+#pragma once
 
 #include "build/build_config.h"
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+// Forward declaration for openssl/*.h
+typedef struct evp_pkey_st EVP_PKEY;
+#elif defined(USE_NSS)
 // Forward declaration.
 struct SECKEYPrivateKeyStr;
 struct SECKEYPublicKeyStr;
 #elif defined(OS_MACOSX)
 #include <Security/cssm.h>
-#elif defined(OS_WIN)
-#include <windows.h>
-#include <wincrypt.h>
 #endif
 
 #include <list>
 #include <vector>
 
 #include "base/basictypes.h"
+
+#if defined(OS_WIN)
+#include "base/crypto/scoped_capi_types.h"
+#endif
+#if defined(USE_NSS)
+#include "base/gtest_prod_util.h"
+#endif
 
 namespace base {
 
@@ -44,7 +52,9 @@ class PrivateKeyInfoCodec {
   // that will be parsed & serialized (modulus(), etc...) during Import(),
   // Export() and ExportPublicKeyInfo() -- not the ASN.1 DER encoding of the
   // PrivateKeyInfo/PublicKeyInfo (which is always big-endian).
-  explicit PrivateKeyInfoCodec(bool big_endian) : big_endian_(big_endian) {}
+  explicit PrivateKeyInfoCodec(bool big_endian);
+
+  ~PrivateKeyInfoCodec();
 
   // Exports the contents of the integer components to the ASN.1 DER encoding
   // of the PrivateKeyInfo structure to |output|.
@@ -53,6 +63,10 @@ class PrivateKeyInfoCodec {
   // Exports the contents of the integer components to the ASN.1 DER encoding
   // of the PublicKeyInfo structure to |output|.
   bool ExportPublicKeyInfo(std::vector<uint8>* output);
+
+  // Exports the contents of the integer components to the ASN.1 DER encoding
+  // of the RSAPublicKey structure to |output|.
+  bool ExportPublicKey(std::vector<uint8>* output);
 
   // Parses the ASN.1 DER encoding of the PrivateKeyInfo structure in |input|
   // and populates the integer components with |big_endian_| byte-significance.
@@ -155,10 +169,19 @@ class PrivateKeyInfoCodec {
 
 // Encapsulates an RSA private key. Can be used to generate new keys, export
 // keys to other formats, or to extract a public key.
+// TODO(hclam): This class should be ref-counted so it can be reused easily.
 class RSAPrivateKey {
  public:
+  ~RSAPrivateKey();
+
   // Create a new random instance. Can return NULL if initialization fails.
   static RSAPrivateKey* Create(uint16 num_bits);
+
+  // Create a new random instance. Can return NULL if initialization fails.
+  // The created key is permanent and is not exportable in plaintext form.
+  //
+  // NOTE: Currently only available if USE_NSS is defined.
+  static RSAPrivateKey* CreateSensitive(uint16 num_bits);
 
   // Create a new instance by importing an existing private key. The format is
   // an ASN.1-encoded PrivateKeyInfo block from PKCS #8. This can return NULL if
@@ -166,16 +189,37 @@ class RSAPrivateKey {
   static RSAPrivateKey* CreateFromPrivateKeyInfo(
       const std::vector<uint8>& input);
 
-  ~RSAPrivateKey();
+  // Create a new instance by importing an existing private key. The format is
+  // an ASN.1-encoded PrivateKeyInfo block from PKCS #8. This can return NULL if
+  // initialization fails.
+  // The created key is permanent and is not exportable in plaintext form.
+  //
+  // NOTE: Currently only available if USE_NSS is defined.
+  static RSAPrivateKey* CreateSensitiveFromPrivateKeyInfo(
+      const std::vector<uint8>& input);
 
-#if defined(USE_NSS)
+  // Import an existing public key, and then search for the private
+  // half in the key database. The format of the public key blob is is
+  // an X509 SubjectPublicKeyInfo block. This can return NULL if
+  // initialization fails or the private key cannot be found.  The
+  // caller takes ownership of the returned object, but nothing new is
+  // created in the key database.
+  //
+  // NOTE: Currently only available if USE_NSS is defined.
+  static RSAPrivateKey* FindFromPublicKeyInfo(
+      const std::vector<uint8>& input);
+
+#if defined(USE_OPENSSL)
+  EVP_PKEY* key() { return key_; }
+#elif defined(USE_NSS)
   SECKEYPrivateKeyStr* key() { return key_; }
+  SECKEYPublicKeyStr* public_key() { return public_key_; }
 #elif defined(OS_WIN)
   HCRYPTPROV provider() { return provider_; }
   HCRYPTKEY key() { return key_; }
 #elif defined(OS_MACOSX)
-  CSSM_CSP_HANDLE csp_handle() { return csp_handle_; }
   CSSM_KEY_PTR key() { return &key_; }
+  CSSM_KEY_PTR public_key() { return &public_key_; }
 #endif
 
   // Exports the private key to a PKCS #1 PrivateKey block.
@@ -184,22 +228,41 @@ class RSAPrivateKey {
   // Exports the public key to an X509 SubjectPublicKeyInfo block.
   bool ExportPublicKey(std::vector<uint8>* output);
 
-private:
-  // Constructor is private. Use Create() or CreateFromPrivateKeyInfo()
-  // instead.
+ private:
+#if defined(USE_NSS)
+  FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FindFromPublicKey);
+  FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FailedFindFromPublicKey);
+#endif
+
+  // Constructor is private. Use one of the Create*() or Find*()
+  // methods above instead.
   RSAPrivateKey();
 
-#if defined(USE_NSS)
+  // Shared helper for Create() and CreateSensitive().
+  // TODO(cmasone): consider replacing |permanent| and |sensitive| with a
+  //                flags arg created by ORing together some enumerated values.
+  static RSAPrivateKey* CreateWithParams(uint16 num_bits,
+                                         bool permanent,
+                                         bool sensitive);
+
+  // Shared helper for CreateFromPrivateKeyInfo() and
+  // CreateSensitiveFromPrivateKeyInfo().
+  static RSAPrivateKey* CreateFromPrivateKeyInfoWithParams(
+      const std::vector<uint8>& input, bool permanent, bool sensitive);
+
+#if defined(USE_OPENSSL)
+  EVP_PKEY* key_;
+#elif defined(USE_NSS)
   SECKEYPrivateKeyStr* key_;
   SECKEYPublicKeyStr* public_key_;
 #elif defined(OS_WIN)
   bool InitProvider();
 
-  HCRYPTPROV provider_;
-  HCRYPTKEY key_;
+  ScopedHCRYPTPROV provider_;
+  ScopedHCRYPTKEY key_;
 #elif defined(OS_MACOSX)
   CSSM_KEY key_;
-  CSSM_CSP_HANDLE csp_handle_;
+  CSSM_KEY public_key_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RSAPrivateKey);

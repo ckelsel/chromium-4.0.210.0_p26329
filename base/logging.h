@@ -499,6 +499,13 @@ DEFINE_DCHECK_OP_IMPL(GT, > )
 #define DCHECK_GE(val1, val2) DCHECK_OP(GE, >=, val1, val2)
 #define DCHECK_GT(val1, val2) DCHECK_OP(GT, > , val1, val2)
 
+#define CHECK_EQ DCHECK_EQ
+#define CHECK_NE DCHECK_NE
+#define CHECK_LE DCHECK_LE
+#define CHECK_LT DCHECK_LT
+#define CHECK_GE DCHECK_GE
+#define CHECK_GT DCHECK_GT
+
 #endif  // OMIT_DLOG_AND_DCHECK
 #undef OMIT_DLOG_AND_DCHECK
 

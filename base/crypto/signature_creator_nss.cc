@@ -4,19 +4,22 @@
 
 #include "base/crypto/signature_creator.h"
 
-// Work around https://bugzilla.mozilla.org/show_bug.cgi?id=455424
-// until NSS 3.12.2 comes out and we update to it.
-#define Lock FOO_NSS_Lock
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <stdlib.h>
-#undef Lock
 
 #include "base/logging.h"
-#include "base/nss_init.h"
+#include "base/nss_util.h"
 #include "base/scoped_ptr.h"
 
 namespace base {
+
+SignatureCreator::~SignatureCreator() {
+  if (sign_context_) {
+    SGN_DestroyContext(sign_context_, PR_TRUE);
+    sign_context_ = NULL;
+  }
+}
 
 // static
 SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
@@ -37,17 +40,6 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   }
 
   return result.release();
-}
-
-SignatureCreator::SignatureCreator() : sign_context_(NULL) {
-  EnsureNSSInit();
-}
-
-SignatureCreator::~SignatureCreator() {
-  if (sign_context_) {
-    SGN_DestroyContext(sign_context_, PR_TRUE);
-    sign_context_ = NULL;
-  }
 }
 
 bool SignatureCreator::Update(const uint8* data_part, int data_part_len) {
@@ -75,6 +67,10 @@ bool SignatureCreator::Final(std::vector<uint8>* signature) {
                     signature_item.data + signature_item.len);
   SECITEM_FreeItem(&signature_item, PR_FALSE);
   return true;
+}
+
+SignatureCreator::SignatureCreator() : sign_context_(NULL) {
+  EnsureNSSInit();
 }
 
 }  // namespace base

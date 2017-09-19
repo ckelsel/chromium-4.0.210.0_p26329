@@ -47,9 +47,9 @@
 #define USE_BASE_DATA_PACK 1
 #endif
 
-// Use NSS for crypto.
+// Use OPENSSL for crypto.
 #if defined(OS_LINUX) || defined(OS_FREEBSD)
-#define USE_NSS 1
+#define USE_OPENSSL 1
 #endif
 
 // Use X11 (and hence GTK/GDK)
