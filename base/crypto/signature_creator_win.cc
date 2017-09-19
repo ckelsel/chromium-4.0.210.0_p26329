@@ -23,6 +23,8 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   return result.release();
 }
 
+SignatureCreator::SignatureCreator() : hash_object_(0) {}
+
 SignatureCreator::~SignatureCreator() {
   if (hash_object_) {
     if (!CryptDestroyHash(hash_object_))
@@ -59,7 +61,6 @@ bool SignatureCreator::Final(std::vector<uint8>* signature) {
   for (size_t i = temp.size(); i > 0; --i)
     signature->push_back(temp[i - 1]);
 
-  hash_object_ = 0;
   return true;
 }
 
