@@ -46,4 +46,6 @@ addons:
       - llvm-4.0-dev
       - pkg-config
       - libgtk2.0-dev
+      - libssl-dev
+      - libgconf2-dev
 
