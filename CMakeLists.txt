@@ -13,8 +13,8 @@ if(LINUX)
     INCLUDE(FindPkgConfig)
     pkg_check_modules (GTK gtk+-2.0)
     #pkg_check_modules (NSS nss)
-    pkg_check_modules (NSS_UTIL nss-util)
-    pkg_check_modules (GCONF gconf-2.0)
+    #pkg_check_modules (NSS_UTIL nss-util)
+    #pkg_check_modules (GCONF gconf-2.0)
 endif()
 
 if(MSVC)
@@ -65,11 +65,11 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/icu)
 set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_base_impl)
 add_subdirectory(${PROJECT_SOURCE_DIR}/base)
 
-set(PROJECT_IPC_LIB_NAME ${PROJECT_NAME_STR}_ipc_impl)
-add_subdirectory(${PROJECT_SOURCE_DIR}/ipc)
+#set(PROJECT_IPC_LIB_NAME ${PROJECT_NAME_STR}_ipc_impl)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/ipc)
 
-set(PROJECT_NET_LIB_NAME ${PROJECT_NAME_STR}_net_impl)
-add_subdirectory(${PROJECT_SOURCE_DIR}/net)
+#set(PROJECT_NET_LIB_NAME ${PROJECT_NAME_STR}_net_impl)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/net)
 
 #-------------------
 # Test

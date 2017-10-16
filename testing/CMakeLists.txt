@@ -163,11 +163,13 @@ if (WIN32)
     add_definitions(/D_WINSOCKAPI_)
 endif (WIN32)
 
+#[[
 set(PROJECT_NET_TEST_NAME ${PROJECT_NET_LIB_NAME}_net_tests)
 add_executable(${PROJECT_NET_TEST_NAME} ${PROJECT_NET_TEST_SRCS}
     ${TEST_COMMON_SRC_FILES})
 target_link_libraries(${PROJECT_NET_TEST_NAME} ${PROJECT_LIB_NAME}
     ${PROJECT_NET_LIB_NAME} ${EXT_LIBS})
+]]
 
 if(NOT WIN32)
     target_link_libraries(${PROJECT_TEST_NAME}
@@ -175,10 +177,12 @@ if(NOT WIN32)
         ${GTEST_LIBS_DIR}/libgtest_main.a
         )
 
+    #[[
     target_link_libraries(${PROJECT_NET_TEST_NAME}
         ${GTEST_LIBS_DIR}/libgtest.a
         ${GTEST_LIBS_DIR}/libgtest_main.a
         )
+    ]]
 else()
     target_link_libraries(${PROJECT_TEST_NAME}
         debug ${GTEST_LIBS_DIR}/DebugLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_FIND_LIBRARY_SUFFIXES}
@@ -217,9 +221,11 @@ if(WIN32)
     add_test(test1 ${PROJECT_IPC_TEST_NAME})
 endif()
 
+#[[
 target_link_libraries(${PROJECT_NET_TEST_NAME} ${CMAKE_THREAD_LIBS_INIT})
 add_test(test1 ${PROJECT_NET_TEST_NAME})
+]]
 
-install(TARGETS ${PROJECT_TEST_NAME} ${PROJECT_IPC_TEST_NAME} ${PROJECT_NET_TEST_NAME}
+install(TARGETS ${PROJECT_TEST_NAME} ${PROJECT_IPC_TEST_NAME}
     DESTINATION bin)
 
