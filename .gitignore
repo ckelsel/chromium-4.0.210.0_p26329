@@ -1,5 +1,7 @@
+.idea
 build
 build_
+cmake-build-*
 
 # Compiled Object files
 *.slo
