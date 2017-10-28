@@ -60,9 +60,9 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/modp_b64)
+]]
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/icu)
-]]
 
 set(PROJECT_LIB_NAME ${PROJECT_NAME_STR}_base_impl)
 add_subdirectory(${PROJECT_SOURCE_DIR}/base)

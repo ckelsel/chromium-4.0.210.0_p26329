@@ -9,7 +9,13 @@ if exist build (
 
     cmake ..
     cmake --build .
-    ctest -VV
 
+    if errorlevel 1 (
+        echo !!! Build Failure Reason Given is %errorlevel% !!!
+        goto end
+    )
+
+    ctest -VV
+:end
     cd ..
 )
