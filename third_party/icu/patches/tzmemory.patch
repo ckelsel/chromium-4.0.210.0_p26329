@@ -1,0 +1,14 @@
+Index: source/i18n/timezone.cpp
+===================================================================
+--- source/i18n/timezone.cpp	(revision 24345)
++++ source/i18n/timezone.cpp	(working copy)
+@@ -571,6 +571,9 @@
+     hostStrID.append((UChar)0);
+     hostStrID.truncate(hostStrID.length()-1);
+     default_zone = createSystemTimeZone(hostStrID);
++#ifdef U_WINDOWS
++    uprv_free(const_cast<char *>(hostID));
++#endif
+ 
+     int32_t hostIDLen = hostStrID.length();
+     if (default_zone != NULL && rawOffset != default_zone->getRawOffset()
