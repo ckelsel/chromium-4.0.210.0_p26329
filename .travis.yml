@@ -1,0 +1,51 @@
+# Enable C++ support
+language: c++
+
+# Ubuntu 14.04 Trusty support
+sudo: enabled
+dist: trusty
+
+# Jobs
+jobs:
+  include:
+    - stage: normal build
+      os: linux
+      compiler: clang-4.0
+    - os: linux
+      compiler: gcc-5
+    - os: linux
+      # Travis creates a cache per compiler.
+      # Set a different value here to store 32-bit
+      # dependencies in a separate cache.
+      compiler: gcc-5 -m32
+
+# Debug build
+script: ./build.sh -d
+
+addons:
+  apt:
+    sources:
+      # add PPAs with more up-to-date toolchains
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-4.0
+    packages:
+      # install toolchains
+      - apport
+      - build-essential
+      - clang-4.0
+      - cmake
+      - cscope
+      - g++-5-multilib
+      - g++-multilib
+      - gcc-5-multilib
+      - gcc-multilib
+      - gdb
+      - language-pack-tr
+      - libc6-dev-i386
+      - libtool
+      - llvm-4.0-dev
+      - pkg-config
+      - libgtk2.0-dev
+      - libssl-dev
+      - libgconf2-dev
+
