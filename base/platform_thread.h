@@ -28,8 +28,6 @@ typedef pid_t PlatformThreadId;
 typedef pthread_t PlatformThreadHandle;
 #endif
 
-namespace base
-{
 
 class PlatformThread
 {
@@ -84,7 +82,5 @@ private:
     DISALLOW_COPY_AND_ASSIGN(PlatformThread);
 
 }; // class PlatformThread
-
-} // namespace base
 
 #endif // BASE_PLATFORM_THREAD_H_

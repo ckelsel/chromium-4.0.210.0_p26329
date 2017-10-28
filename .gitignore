@@ -1,5 +1,8 @@
 build
 build_
+cmake-build*
+*.bat
+.idea
 
 # Compiled Object files
 *.slo

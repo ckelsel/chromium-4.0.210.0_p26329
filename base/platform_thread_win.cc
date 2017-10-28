@@ -16,9 +16,6 @@
 #include "base/platform_thread.h"
 #include "base/logging.h"
 
-namespace base
-{
-
 // The information on how to set the thread name comes from
 // a MSDN article: http://msdn2.microsoft.com/en-us/library/xcb2z8hs.aspx
 const DWORD kVCThreadNameException = 0x406D1388;
@@ -30,7 +27,7 @@ typedef struct tagTHREADNAME_INFO {
     DWORD dwFlags;  // Reserved for future use, must be zero.
 } THREADNAME_INFO;
 
-//static 
+//static
 PlatformThreadId PlatformThread::CurrentId()
 {
     return GetCurrentThreadId();
@@ -72,8 +69,3 @@ void PlatformThread::SetName(const char *name)
     {
     }
 }
-
-
-
-}
-

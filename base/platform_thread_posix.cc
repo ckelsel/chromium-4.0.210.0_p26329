@@ -19,8 +19,6 @@
 #include "base/platform_thread.h"
 #include "base/logging.h"
 
-namespace base
-{
 
 //static 
 PlatformThreadId PlatformThread::CurrentId()
@@ -59,8 +57,4 @@ void PlatformThread::SetName(const char *name)
     // nor Mac OS X (our two POSIX targets) provide any non-portable way of doing
     // it either. (Some BSDs provide pthread_set_name_np but that isn't much of a
     // consolation prize.)
-}
-
-
-
 }
