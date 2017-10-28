@@ -22,8 +22,7 @@ init:
 # branches to build
 branches:
   # whitelist
-  only:
-    - master
+  # only:
   # blacklist
   except:
     - gh-pages
