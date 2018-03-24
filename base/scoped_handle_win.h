@@ -31,8 +31,7 @@ public:
    
     }
 
-    ScopedHandle(HANDLE h) {
-        Set(h);
+    ScopedHandle(HANDLE h) :handle_(h) {
     }
 
     // Use this instead of comparing to INVALID_HANDLE_VALUE to pick up our NULL
