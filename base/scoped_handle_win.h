@@ -34,6 +34,10 @@ public:
     ScopedHandle(HANDLE h) :handle_(h) {
     }
 
+    ~ScopedHandle() {
+        Close();
+    }
+
     // Use this instead of comparing to INVALID_HANDLE_VALUE to pick up our NULL
     // usage for errors.
     bool IsValid() const {
