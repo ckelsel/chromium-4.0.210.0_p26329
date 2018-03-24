@@ -15,7 +15,9 @@ set(TEST_SRC_FILES basictypes_unittest.cc)
 #set(TEST_SRC_FILES ${TEST_SRC_FILES} scoped_ptr_unittest.cc)
 #set(TEST_SRC_FILES ${TEST_SRC_FILES} simple_thread_unittest.cc)
 set(TEST_SRC_FILES ${TEST_SRC_FILES} sys_info_unittest.cc)
-set(TEST_SRC_FILES ${TEST_SRC_FILES} ${PROJECT_SOURCE_DIR}/base/atomicops_unittest.cc)
+
+file(GLOB BASE_TEST_FILES ${PROJECT_SOURCE_DIR}/base/*_unittest.cc)
+set(TEST_SRC_FILES ${TEST_SRC_FILES} ${BASE_TEST_FILES})
 
 if(WIN32)
     set(EXT_LIBS ${EXT_LIBS} ws2_32)
